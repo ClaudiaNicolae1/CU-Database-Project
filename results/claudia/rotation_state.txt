@@ -1,0 +1,32 @@
+name	min_v	cur_v	rot_page	max_page	busy
+employees/departments	1	2	NULL	NULL	0
+employees/dept_emp	1	2	NULL	NULL	0
+employees/dept_manager	1	2	NULL	NULL	0
+employees/employees	1	2	NULL	NULL	0
+employees/salaries	1	2	NULL	NULL	0
+employees/titles	1	2	NULL	NULL	0
+sbtest/sbtest1	1	2	NULL	NULL	0
+sbtest/sbtest2	1	2	NULL	NULL	0
+sbtest/sbtest3	1	2	NULL	NULL	0
+sbtest/sbtest4	1	2	NULL	NULL	0
+sbtest/sbtest5	1	2	NULL	NULL	0
+sbtest/sbtest6	1	2	NULL	NULL	0
+sbtest/sbtest7	1	2	NULL	NULL	0
+sbtest/sbtest8	1	2	NULL	NULL	0
+Variable_name	Value
+innodb_encryption_rotate_key_age	1
+innodb_encryption_rotation_iops	100
+innodb_encryption_threads	4
+Variable_name	Value
+Innodb_encryption_rotation_pages_read_from_cache	0
+Innodb_encryption_rotation_pages_read_from_disk	0
+Innodb_encryption_rotation_pages_modified	0
+Innodb_encryption_rotation_pages_flushed	0
+Innodb_encryption_rotation_estimated_iops	80
+Innodb_encryption_n_merge_blocks_encrypted	0
+Innodb_encryption_n_merge_blocks_decrypted	0
+Innodb_encryption_n_rowlog_blocks_encrypted	0
+Innodb_encryption_n_rowlog_blocks_decrypted	0
+Innodb_encryption_n_temp_blocks_encrypted	0
+Innodb_encryption_n_temp_blocks_decrypted	0
+Innodb_encryption_num_key_requests	2620011
