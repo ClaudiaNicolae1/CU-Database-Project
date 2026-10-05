@@ -1,0 +1,44 @@
+sysbench 1.0.20 (using system LuaJIT 2.1.0-beta3)
+
+Running the test with following options:
+Number of threads: 8
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 8 tps: 2654.44 qps: 53099.90 (r/w/o: 37172.26/10617.96/5309.68) lat (ms,95%): 4.57 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 8 tps: 2662.55 qps: 53245.21 (r/w/o: 37269.74/10650.38/5325.09) lat (ms,95%): 4.57 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 8 tps: 2622.57 qps: 52457.09 (r/w/o: 36720.47/10491.48/5245.14) lat (ms,95%): 4.65 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 8 tps: 2285.01 qps: 45697.31 (r/w/o: 31988.08/9139.22/4570.01) lat (ms,95%): 5.47 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 8 tps: 2337.32 qps: 46747.44 (r/w/o: 32723.41/9349.39/4674.64) lat (ms,95%): 5.37 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 8 tps: 2561.94 qps: 51241.02 (r/w/o: 35869.07/10248.06/5123.88) lat (ms,95%): 4.74 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            2117514
+        write:                           605004
+        other:                           302502
+        total:                           3025020
+    transactions:                        151251 (2520.59 per sec.)
+    queries:                             3025020 (50411.86 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          60.0046s
+    total number of events:              151251
+
+Latency (ms):
+         min:                                    1.40
+         avg:                                    3.17
+         max:                                   24.28
+         95th percentile:                        5.00
+         sum:                               479592.84
+
+Threads fairness:
+    events (avg/stddev):           18906.3750/38.85
+    execution time (avg/stddev):   59.9491/0.00
+
