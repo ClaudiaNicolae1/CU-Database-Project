@@ -1,0 +1,9 @@
+results/claudia/unencrypted_run1.txt  tps=2826.03  p95_ms=4.57
+results/claudia/unencrypted_run2.txt  tps=2636.63  p95_ms=4.65
+results/claudia/unencrypted_run3.txt  tps=2520.59  p95_ms=5.00
+results/claudia/encrypted_defaultcache_run1.txt  tps=194.12  p95_ms=240.02
+results/claudia/encrypted_defaultcache_run2.txt  tps=190.34  p95_ms=227.40
+results/claudia/encrypted_defaultcache_run3.txt  tps=152.86  p95_ms=350.33
+results/claudia/encrypted_run1.txt  tps=2661.11  p95_ms=5.67
+results/claudia/encrypted_run2.txt  tps=2196.05  p95_ms=6.91
+results/claudia/encrypted_run3.txt  tps=2412.92  p95_ms=6.32
