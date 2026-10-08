@@ -60,6 +60,8 @@ hashicorp-key-management-cache-version-timeout = 60000
 ```
 
 Files: `results/claudia/encrypted_defaultcache_run*.txt` (before the fix) and `encrypted_run*.txt` (after).
+  
+  Raw outputs of the diagnosis tests: `results/claudia/experiments/` (`debug_encrypted.txt`, `exp_logoff_run1.txt`, `exp_logoff_run2.txt`, `debug_vault_cache.txt`).
 
 ### How the cause was found
 

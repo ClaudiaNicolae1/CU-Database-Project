@@ -1,0 +1,28 @@
+Success! Enabled the file audit device at: file/
+=== current config
+vault audit lines before: 214
+    transactions:                        8273   (405.64 per sec.)
+         95th percentile:                       86.00
+vault audit lines after: 30828
+hashicorp-key-management-cache-version-timeout = 60000
+=== with cache-version-timeout=60000
+vault audit lines before: 40494
+[ 10s ] thds: 8 tps: 2608.58 qps: 52182.37 (r/w/o: 36529.00/10435.41/5217.96) lat (ms,95%): 5.37 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 8 tps: 2798.65 qps: 55971.92 (r/w/o: 39180.81/11193.80/5597.30) lat (ms,95%): 5.28 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 8 tps: 2851.50 qps: 57031.81 (r/w/o: 39921.94/11406.88/5702.99) lat (ms,95%): 5.28 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 8 tps: 2864.40 qps: 57287.66 (r/w/o: 40101.14/11457.71/5728.81) lat (ms,95%): 5.18 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 8 tps: 2734.60 qps: 54689.49 (r/w/o: 38283.16/10937.12/5469.21) lat (ms,95%): 5.47 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 8 tps: 2109.82 qps: 42195.99 (r/w/o: 29536.85/8439.50/4219.65) lat (ms,95%): 7.17 err/s: 0.00 reconn/s: 0.00
+    transactions:                        159688 (2661.11 per sec.)
+         95th percentile:                        5.67
+vault audit lines after: 40504
+vault audit lines before: 40504
+[ 10s ] thds: 8 tps: 2209.20 qps: 44194.74 (r/w/o: 30937.53/8838.11/4419.10) lat (ms,95%): 6.91 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 8 tps: 2178.34 qps: 43566.74 (r/w/o: 30496.39/8713.57/4356.78) lat (ms,95%): 7.04 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 8 tps: 2177.70 qps: 43553.29 (r/w/o: 30488.36/8709.52/4355.41) lat (ms,95%): 7.04 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 8 tps: 2193.20 qps: 43866.82 (r/w/o: 30706.94/8773.48/4386.39) lat (ms,95%): 7.04 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 8 tps: 2206.11 qps: 44115.52 (r/w/o: 30879.89/8823.52/4412.11) lat (ms,95%): 6.91 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 8 tps: 2211.92 qps: 44240.10 (r/w/o: 30967.98/8848.18/4423.94) lat (ms,95%): 6.91 err/s: 0.00 reconn/s: 0.00
+    transactions:                        131776 (2196.05 per sec.)
+         95th percentile:                        6.91
+vault audit lines after: 40530
