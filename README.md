@@ -28,7 +28,7 @@ bash scripts/bench.sh encrypted NAME
 bash scripts/rotate.sh NAME
 ```
 
-Use your own name instead of `NAME`. Before the encrypted steps, wait until `rotating_or_flushing` is 0 for every row of the query above.
+Use your name instead of `NAME`. Before the encrypted steps, wait until `rotating_or_flushing` is 0 for every row of the query above.
 
 Vault runs in Docker in dev mode with the token `root`. This is for the project only. Dev mode keeps keys in memory so removing the container makes the encrypted tables unreadable.
 
@@ -61,7 +61,7 @@ hashicorp-key-management-cache-version-timeout = 60000
 
 Files: `results/claudia/encrypted_defaultcache_run*.txt` (before the fix) and `encrypted_run*.txt` (after).
   
-  Raw outputs of the diagnosis tests: `results/claudia/experiments/` (`debug_encrypted.txt`, `exp_logoff_run1.txt`, `exp_logoff_run2.txt`, `debug_vault_cache.txt`).
+  Outputs of the tests: `results/claudia/experiments/` (`debug_encrypted.txt`, `exp_logoff_run1.txt`, `exp_logoff_run2.txt`, `debug_vault_cache.txt`).
 
 ### How the cause was found
 
@@ -127,4 +127,4 @@ The option and its default are described in the [MariaDB documentation](https://
 
 ## Limits
 
-One machine per person, three runs per configuration and about 10% variation between runs. Absolute numbers depend on the machine.
+One machine per person, three runs per configuration and about 10% variation between runs. Numbers depend on the machine.
