@@ -1,4 +1,4 @@
-A project for area 10, "Encryption and key management" for the [MariaDB student database projects, 2026-09](https://mariadb.org/bachelor_hackathon_2026-09/).
+A project for area 10, "Encryption and key management" for the MariaDB student database projects, 2026-09. ([project page](https://mariadb.org/bachelor_hackathon_2026-09/))
 
 # Encryption at rest and key management in MariaDB
 
