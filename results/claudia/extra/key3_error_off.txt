@@ -1,0 +1,5 @@
+--------------
+CREATE TABLE shop.t_paused3 (id INT) ENCRYPTED=YES ENCRYPTION_KEY_ID=3
+--------------
+
+ERROR 1105 (HY000) at line 1: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15001 milliseconds with 0 bytes received

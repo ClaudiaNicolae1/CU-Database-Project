@@ -1,0 +1,7 @@
+read shop.order_items (key 1, cold) | ok | 0.3 s
+read shop.payment_methods (key 2, cold) | ok | 0.1 s
+update one row in shop.users (key 2) | ok | 0.0 s
+create encrypted table, key 2 | ok | 0.0 s
+insert into that table | ok | 0.0 s
+create encrypted table, key 1 | ok | 0.0 s
+create encrypted table, key 3 (never used since the restart) | error: -------------- CREATE TABLE shop.t_paused3 (id INT) ENCRYPTED=YES ENCRYPTION_KEY_ID=3 --------------  ERROR 1105 (HY000) at line 1: hashicorp: curl re | 60.0 s

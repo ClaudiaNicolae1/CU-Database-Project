@@ -149,6 +149,25 @@ In short: on this workload a running server rode out a 150 s Vault outage, but a
 
 Raw files: `results/claudia/vault_down_off_*` and `vault_down_on_*` (events, summary, restart log, journal excerpt).
 
+### Extra test: operations that need a key
+
+The test above only shows that this workload did not notice a paused Vault. It does not show that a running server never needs Vault:
+
+- The workload reads and updates rows on pages whose keys the server already holds in memory. The plugin only has to ask Vault when it needs something it does not have, for example: a key that is not cached, a new key version, or a new encrypted tablespace.
+- In this version the cache timers count CPU time so it is hard to say when entries expire. With four busy workers they should probably have expired during the 150 s pause, but no Vault error was logged so we do not know whether the plugin asked Vault at all.
+- A paused Vault makes requests time out, but a stopped Vault refuses connections at once (curl error 7). The running server was only tested with the paused case.
+
+The extra tests are kept apart from the main material in `scripts/extra/` and `results/<name>/extra/`.
+
+Method (`scripts/extra/vault_down_cold.sh`): MariaDB is restarted while Vault is up, and then Vault is paused straight away. Operations that need a key are timed one by one each with a 100 s limit: reading two encrypted tables that have not been read since the restart (key 1 and key 2), updating a row, and creating encrypted tables with key 2 and key 1. The second run adds a table with key 3, a key that exists in Vault but that the server has not used since the restart. Each result is `ok`, an error message or a timeout. Both settings of `use-cache-on-timeout` are tried.
+
+Results (each run with `use-cache-on-timeout` off and on):
+
+- **First run, keys 1 and 2 only:** all six operations succeeded in 0.3 s or less in both modes. Both keys are probably loaded when MariaDB starts (the log shows the key for temporary files, id 2, being loaded at startup), so these operations never needed Vault. Files: `results/<name>/extra/vault_down_cold_run1_*`.
+- **Second run, with an operation that needs key 3:** key 3 exists in Vault but the server had not used it since the restart. With Vault paused, `CREATE TABLE ... ENCRYPTED=YES ENCRYPTION_KEY_ID=3` failed after 60.0 s in both modes, with `ERROR 1105 (HY000)`. With `off` the message is `hashicorp: curl returned this error code: 28 ... Operation timed out after 15001 milliseconds with 0 bytes received`: the documented request timeout of 15 s (the 60 s in total fits 4 attempts, the first try and 3 retries). With `on` the message is `hashicorp: Unable to get key data`, which fits a plugin that is allowed to use a cached key after the timeouts and has none for key 3. Full text: `results/<name>/extra/key3_error_off.txt` and `key3_error_on.txt`. The server kept running and answered again once Vault was resumed. The error was reported to the client only; the server log (journal) holds only the startup lines. `use-cache-on-timeout` could not help, because there was no cached key to fall back on. Files: `results/<name>/extra/vault_down_cold_off_*` and `vault_down_cold_on_*`.
+
+So a running server depends on Vault as soon as it needs a key it does not hold in memory, and it only looks independent while every key it uses is already loaded. Not tested: whether the 60 s wait blocks other sessions, an expired cache entry, and key rotation during an outage.
+
 ## Still to document
 
 - Key rotation under load: TODO (`scripts/rotate.sh`)
