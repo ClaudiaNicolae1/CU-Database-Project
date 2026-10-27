@@ -121,11 +121,31 @@ Result: 10 and 26 new lines in the two runs and throughput back to about 2400 tp
 
 The option and its default are described in the [MariaDB documentation](https://mariadb.com/docs/server/security/encryption/data-at-rest-encryption/key-management-and-encryption-plugins/hashicorp-key-management-plugin).
 
+## What happens when the key manager is unavailable
+
+Observed: after a reboot the Vault container was not running, so port 8200 refused connections. MariaDB then did not start at all. The error log shows the plugin failing its first request to Vault (`curl returned this error code: 7 ... Failed to connect to 127.0.0.1 port 8200`, `Unable to get storage options for ".../sys/mounts/mariadb/tune"`), then `Plugin 'hashicorp_key_management' init function returned error`, `InnoDB: cannot enable encryption, encryption plugin is not available` and `Aborting`. Dev-mode Vault keeps its keys in memory, so starting the container again gives an empty Vault: the keys were gone and the encrypted data could not be read any more. The databases were rebuilt with `scripts/setup.sh`. Lines: `results/claudia/vault_stopped_at_startup.txt`.
+
+Controlled test (`scripts/vault_down.sh`): the Vault container is paused, so it stops answering but keeps its keys in memory.
+
+- **A, running server:** four workers read and update the `shop` tables for 240 s. Vault is paused from second 20 to second 170, and the duration and result of every round are logged.
+- **B, restart:** MariaDB is restarted while Vault is paused. The service state and a test query are logged every 5 s. Then Vault is resumed, and the time until MariaDB answers again is recorded.
+
+Both are run twice, with `hashicorp-key-management-use-cache-on-timeout` set to `off` and to `on`.
+
+What the MariaDB documentation says about this version (10.11.14), to compare with the results:
+
+- When Vault does not answer, the plugin waits `hashicorp-key-management-timeout` (15 s by default) per request and retries 3 times.
+- `use-cache-on-timeout` is `OFF` by default here and covers only timeouts. From 10.11.16 it is `ON` by default and covers all errors, so a server keeps running on cached keys while Vault is temporarily unreachable.
+- Keys and key versions are cached. In this version the cache times (including our `cache-version-timeout`) are measured in process CPU time, not wall-clock time. This was fixed in 10.11.19.
+- The plugin does not unseal Vault by itself.
+
+Results of the controlled test: TODO (`results/<name>/vault_down_off_*` and `vault_down_on_*`)
+
 ## Still to document
 
 - Key rotation under load: TODO (`scripts/rotate.sh`)
 - What the data files show before and after encryption: TODO (`results/<name>/attack_*.txt`)
-- What happens when Vault is unavailable: TODO
+- What happens when Vault is unavailable: observed once, see the section above; results of the controlled test TODO
 
 ## Limits
 

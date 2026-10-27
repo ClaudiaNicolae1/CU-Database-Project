@@ -1,0 +1,21 @@
+Oct 26 16:20:17 mariadbd[1844]: 2026-10-26 16:20:17 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 7 with the following error message: Failed to connect to 127.0.0.1 port 8200 after 1 ms: Couldn't connect to server
+Oct 26 16:20:17 mariadbd[1844]: 2026-10-26 16:20:17 0 [ERROR] mariadbd: hashicorp: Unable to get storage options for "http://127.0.0.1:8200/v1/sys/mounts/mariadb/tune"
+Oct 26 16:20:17 mariadbd[1844]: 2026-10-26 16:20:17 0 [ERROR] Plugin 'hashicorp_key_management' init function returned error.
+Oct 26 16:20:17 mariadbd[1844]: 2026-10-26 16:20:17 0 [ERROR] Plugin 'hashicorp_key_management' registration as a ENCRYPTION failed.
+Oct 26 16:20:17 mariadbd[1844]: 2026-10-26 16:20:17 0 [ERROR] InnoDB: cannot enable encryption, encryption plugin is not available
+Oct 26 16:20:17 mariadbd[1844]: 2026-10-26 16:20:17 0 [ERROR] Failed to enable encryption of temporary files
+Oct 26 16:20:17 mariadbd[1844]: 2026-10-26 16:20:17 0 [ERROR] Aborting
+Oct 27 01:08:03 mariadbd[15770]: 2026-10-27  1:08:03 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 7 with the following error message: Failed to connect to 127.0.0.1 port 8200 after 0 ms: Couldn't connect to server
+Oct 27 01:08:03 mariadbd[15770]: 2026-10-27  1:08:03 0 [ERROR] mariadbd: hashicorp: Unable to get storage options for "http://127.0.0.1:8200/v1/sys/mounts/mariadb/tune"
+Oct 27 01:08:03 mariadbd[15770]: 2026-10-27  1:08:03 0 [ERROR] Plugin 'hashicorp_key_management' init function returned error.
+Oct 27 01:08:03 mariadbd[15770]: 2026-10-27  1:08:03 0 [ERROR] Plugin 'hashicorp_key_management' registration as a ENCRYPTION failed.
+Oct 27 01:08:03 mariadbd[15770]: 2026-10-27  1:08:03 0 [ERROR] InnoDB: cannot enable encryption, encryption plugin is not available
+Oct 27 01:08:03 mariadbd[15770]: 2026-10-27  1:08:03 0 [ERROR] Failed to enable encryption of temporary files
+Oct 27 01:08:03 mariadbd[15770]: 2026-10-27  1:08:03 0 [ERROR] Aborting
+Oct 27 01:09:10 mariadbd[15990]: 2026-10-27  1:09:10 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 7 with the following error message: Failed to connect to 127.0.0.1 port 8200 after 0 ms: Couldn't connect to server
+Oct 27 01:09:10 mariadbd[15990]: 2026-10-27  1:09:10 0 [ERROR] mariadbd: hashicorp: Unable to get storage options for "http://127.0.0.1:8200/v1/sys/mounts/mariadb/tune"
+Oct 27 01:09:10 mariadbd[15990]: 2026-10-27  1:09:10 0 [ERROR] Plugin 'hashicorp_key_management' init function returned error.
+Oct 27 01:09:10 mariadbd[15990]: 2026-10-27  1:09:10 0 [ERROR] Plugin 'hashicorp_key_management' registration as a ENCRYPTION failed.
+Oct 27 01:09:10 mariadbd[15990]: 2026-10-27  1:09:10 0 [ERROR] InnoDB: cannot enable encryption, encryption plugin is not available
+Oct 27 01:09:10 mariadbd[15990]: 2026-10-27  1:09:10 0 [ERROR] Failed to enable encryption of temporary files
+Oct 27 01:09:10 mariadbd[15990]: 2026-10-27  1:09:10 0 [ERROR] Aborting
