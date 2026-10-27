@@ -1,0 +1,18 @@
+Oct 27 15:01:29 mariadbd[8778]: 2026-10-27 15:01:29 0 [Note] InnoDB: Creating #1 encryption thread id 134364629300928 total threads 4.
+Oct 27 15:01:29 mariadbd[8778]: 2026-10-27 15:01:29 0 [Note] InnoDB: Creating #2 encryption thread id 134364620908224 total threads 4.
+Oct 27 15:01:29 mariadbd[8778]: 2026-10-27 15:01:29 0 [Note] InnoDB: Creating #3 encryption thread id 134364604122816 total threads 4.
+Oct 27 15:01:29 mariadbd[8778]: 2026-10-27 15:01:29 0 [Note] InnoDB: Creating #4 encryption thread id 134364495083200 total threads 4.
+Oct 27 15:01:29 mariadbd[8778]: 2026-10-27 15:01:29 0 [Note] Using encryption key id 2 for temporary files
+Oct 27 15:06:30 mariadbd[384793]: 2026-10-27 15:06:30 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15001 milliseconds with 0 bytes received
+Oct 27 15:06:30 mariadbd[384793]: 2026-10-27 15:06:30 0 [ERROR] mariadbd: hashicorp: Unable to get storage options for "http://127.0.0.1:8200/v1/sys/mounts/mariadb/tune"
+Oct 27 15:06:30 mariadbd[384793]: 2026-10-27 15:06:30 0 [ERROR] Plugin 'hashicorp_key_management' init function returned error.
+Oct 27 15:06:30 mariadbd[384793]: 2026-10-27 15:06:30 0 [ERROR] Plugin 'hashicorp_key_management' registration as a ENCRYPTION failed.
+Oct 27 15:06:30 mariadbd[384793]: 2026-10-27 15:06:30 0 [ERROR] InnoDB: cannot enable encryption, encryption plugin is not available
+Oct 27 15:06:30 mariadbd[384793]: 2026-10-27 15:06:30 0 [ERROR] Plugin 'InnoDB' registration as a STORAGE ENGINE failed.
+Oct 27 15:06:30 mariadbd[384793]: 2026-10-27 15:06:30 0 [ERROR] Failed to enable encryption of temporary files
+Oct 27 15:06:30 mariadbd[384793]: 2026-10-27 15:06:30 0 [ERROR] Aborting
+Oct 27 15:12:33 mariadbd[385519]: 2026-10-27 15:12:33 0 [Note] InnoDB: Creating #1 encryption thread id 138835807696576 total threads 4.
+Oct 27 15:12:33 mariadbd[385519]: 2026-10-27 15:12:33 0 [Note] InnoDB: Creating #2 encryption thread id 138835799303872 total threads 4.
+Oct 27 15:12:33 mariadbd[385519]: 2026-10-27 15:12:33 0 [Note] InnoDB: Creating #3 encryption thread id 138835782518464 total threads 4.
+Oct 27 15:12:33 mariadbd[385519]: 2026-10-27 15:12:33 0 [Note] InnoDB: Creating #4 encryption thread id 138835774125760 total threads 4.
+Oct 27 15:12:33 mariadbd[385519]: 2026-10-27 15:12:33 0 [Note] Using encryption key id 2 for temporary files

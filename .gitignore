@@ -4,3 +4,4 @@ vault-keys*
 *.ibd
 *.log
 data/
+results/*/vault_down_*_rounds.txt

@@ -1,0 +1,8 @@
+use-cache-on-timeout=on, mariadb  Ver 15.1 Distrib 10.11.14-MariaDB, for debian-linux-gnu (x86_64) using  EditLine wrapper
+=== A: running server, Vault unreachable
+vault paused at 20s
+vault resumed at 170s
+=== B: restart MariaDB while Vault is unreachable
+vault resumed 121s after the restart began
+MariaDB still not answering 300s after Vault came back, restarting once more
+recovered after the second restart

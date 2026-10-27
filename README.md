@@ -139,7 +139,15 @@ What the MariaDB documentation says about this version (10.11.14), to compare wi
 - Keys and key versions are cached. In this version the cache times (including our `cache-version-timeout`) are measured in process CPU time, not wall-clock time. This was fixed in 10.11.19.
 - The plugin does not unseal Vault by itself.
 
-Results of the controlled test: TODO (`results/<name>/vault_down_off_*` and `vault_down_on_*`)
+Results of the controlled test (MariaDB 10.11.14, run once with `use-cache-on-timeout` off and once on; the two runs gave the same picture):
+
+- **A, running server, Vault paused for 150 s:** 41,661 rounds (off) and 41,983 rounds (on) of reads and updates, with 0 errors in both. The average round took 0.02 s and the slowest 0.03 s, and the rate during the pause (about 1,750 rounds per 10 s) was the same as before it. The MariaDB log shows no Vault error during the pause, so on this workload the running server did not need Vault in that time. Vault requests themselves were not logged.
+- **B, restart while Vault is paused:** the service stayed `activating` for about 60 s and then went to `failed` (after 66 s with `off`, 65 s with `on`). The log shows a request to Vault ending in a curl timeout (error 28), then `Plugin 'hashicorp_key_management' init function returned error`, `InnoDB: cannot enable encryption, encryption plugin is not available` and `Aborting`. About a minute fits the documented request timeout of 15 s with 3 retries. The service stayed `failed` until Vault was resumed (about 120 s after the restart began), and it did not start again by itself in the following 300 s. A second manual restart brought it back in both runs.
+- `use-cache-on-timeout` made no visible difference in either test. For the restart this is expected, because the cache lives in the server process and is empty after a restart.
+
+In short: on this workload a running server rode out a 150 s Vault outage, but a restart during an outage (paused, or stopped as in the observation above) means the server does not start. It stays down until Vault is back and someone starts the service again.
+
+Raw files: `results/claudia/vault_down_off_*` and `vault_down_on_*` (events, summary, restart log, journal excerpt).
 
 ## Still to document
 
