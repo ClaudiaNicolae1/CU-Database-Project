@@ -1,0 +1,145 @@
+Oct 28 01:59:59 mariadbd[1135378]: 2026-10-28  1:59:59 0 [Note] /usr/sbin/mariadbd (initiated by: unknown): Normal shutdown
+Oct 28 01:59:59 mariadbd[1135378]: 2026-10-28  1:59:59 0 [Note] InnoDB: FTS optimize thread exiting.
+Oct 28 01:59:59 systemd[1]: Stopping mariadb.service - MariaDB 10.11.14 database server...
+Oct 28 01:59:59 mariadbd[1135378]: 2026-10-28  1:59:59 0 [Note] InnoDB: Starting shutdown...
+Oct 28 01:59:59 mariadbd[1135378]: 2026-10-28  1:59:59 0 [Note] InnoDB: Dumping buffer pool(s) to /var/lib/mysql/ib_buffer_pool
+Oct 28 01:59:59 mariadbd[1135378]: 2026-10-28  1:59:59 0 [Note] InnoDB: Restricted to 2028 pages due to innodb_buf_pool_dump_pct=25
+Oct 28 01:59:59 mariadbd[1135378]: 2026-10-28  1:59:59 0 [Note] InnoDB: Buffer pool(s) dump completed at 261028  1:59:59
+Oct 28 01:59:59 mariadbd[1135378]: 2026-10-28  1:59:59 0 [Note] InnoDB: Removed temporary tablespace data file: "./ibtmp1"
+Oct 28 01:59:59 mariadbd[1135378]: 2026-10-28  1:59:59 0 [Note] InnoDB: Shutdown completed; log sequence number 657973171; transaction id 232238
+Oct 28 01:59:59 mariadbd[1135378]: 2026-10-28  1:59:59 0 [Note] /usr/sbin/mariadbd: Shutdown complete
+Oct 28 01:59:59 systemd[1]: mariadb.service: Deactivated successfully.
+Oct 28 01:59:59 systemd[1]: Stopped mariadb.service - MariaDB 10.11.14 database server.
+Oct 28 01:59:59 systemd[1]: mariadb.service: Consumed 32.443s CPU time.
+Oct 28 01:59:59 systemd[1]: Starting mariadb.service - MariaDB 10.11.14 database server...
+Oct 28 01:59:59 (mariadbd)[1380397]: mariadb.service: Referenced but unset environment variable evaluates to an empty string: MYSQLD_OPTS, _WSREP_NEW_CLUSTER
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] Starting MariaDB 10.11.14-MariaDB-0ubuntu0.24.04.1 source revision 053f9bcb5b147bf00edb99e1310bae9125b7f125 server_uid g8L8ogDFRP0lRju7Qx339PfQwts= as process 1380397
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Compressed tables use zlib 1.3
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Number of transaction pools: 1
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Using crc32 + pclmulqdq instructions
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Using io_uring
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: innodb_buffer_pool_size_max=128m, innodb_buffer_pool_size=128m
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Initialized memory pressure event listener
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Completed initialization of buffer pool
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: File system buffers for log disabled (block size=512 bytes)
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: End of log at LSN=657973171
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: 128 rollback segments are active.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Setting file './ibtmp1' size to 12.000MiB. Physically writing the file full; Please wait ...
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: File './ibtmp1' size is now 12.000MiB.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: log sequence number 657973171; transaction id 232239
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Loading buffer pool(s) from /var/lib/mysql/ib_buffer_pool
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Creating #1 encryption thread id 140694492497600 total threads 4.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Creating #2 encryption thread id 140694404462272 total threads 4.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Creating #3 encryption thread id 140694396069568 total threads 4.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Creating #4 encryption thread id 140694387676864 total threads 4.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] Plugin 'FEEDBACK' is disabled.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] Using encryption key id 2 for temporary files
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Warning] You need to use --log-bin to make --expire-logs-days or --binlog-expire-logs-seconds work.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Buffer pool(s) load completed at 261028  1:59:59
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] Server socket created on IP: '127.0.0.1', port: '3306'.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] /usr/sbin/mariadbd: ready for connections.
+Oct 28 01:59:59 mariadbd[1380397]: Version: '10.11.14-MariaDB-0ubuntu0.24.04.1'  socket: '/run/mysqld/mysqld.sock'  port: 3306  Ubuntu 24.04
+Oct 28 01:59:59 systemd[1]: Started mariadb.service - MariaDB 10.11.14 database server.
+Oct 28 02:01:09 mariadbd[1380397]: 2026-10-28  2:01:09 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15002 milliseconds with 0 bytes received
+Oct 28 02:01:09 mariadbd[1380397]: 2026-10-28  2:01:09 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Oct 28 02:01:09 mariadbd[1380397]: 2026-10-28  2:01:09 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15002 milliseconds with 0 bytes received
+Oct 28 02:01:09 mariadbd[1380397]: 2026-10-28  2:01:09 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Oct 28 02:02:01 mariadbd[1380397]: 2026-10-28 02:02:01 0x7ff6149176c0  InnoDB: Assertion failure in file ./storage/innobase/fil/fil0crypt.cc line 521
+Oct 28 02:02:01 mariadbd[1380397]: InnoDB: Failing assertion: key_version != ENCRYPTION_KEY_VERSION_INVALID
+Oct 28 02:02:01 mariadbd[1380397]: InnoDB: We intentionally generate a memory trap.
+Oct 28 02:02:01 mariadbd[1380397]: InnoDB: Submit a detailed bug report to https://jira.mariadb.org/
+Oct 28 02:02:01 mariadbd[1380397]: InnoDB: If you get repeated assertion failures or crashes, even
+Oct 28 02:02:01 mariadbd[1380397]: InnoDB: immediately after the mariadbd startup, there may be
+Oct 28 02:02:01 mariadbd[1380397]: InnoDB: corruption in the InnoDB tablespace. Please refer to
+Oct 28 02:02:01 mariadbd[1380397]: InnoDB: https://mariadb.com/kb/en/library/innodb-recovery-modes/
+Oct 28 02:02:01 mariadbd[1380397]: InnoDB: about forcing recovery.
+Oct 28 02:02:01 mariadbd[1380397]: 261028  2:02:01 [ERROR] /usr/sbin/mariadbd got signal 6 ;
+Oct 28 02:02:01 mariadbd[1380397]: Sorry, we probably made a mistake, and this is a bug.
+Oct 28 02:02:01 mariadbd[1380397]: Your assistance in bug reporting will enable us to fix this for the next release.
+Oct 28 02:02:01 mariadbd[1380397]: To report this bug, see https://mariadb.com/kb/en/reporting-bugs about how to report
+Oct 28 02:02:01 mariadbd[1380397]: a bug on https://jira.mariadb.org/.
+Oct 28 02:02:01 mariadbd[1380397]: Please include the information from the server start above, to the end of the
+Oct 28 02:02:01 mariadbd[1380397]: information below.
+Oct 28 02:02:01 mariadbd[1380397]: Server version: 10.11.14-MariaDB-0ubuntu0.24.04.1 source revision: 053f9bcb5b147bf00edb99e1310bae9125b7f125
+Oct 28 02:02:01 mariadbd[1380397]: The information page at https://mariadb.com/kb/en/how-to-produce-a-full-stack-trace-for-mariadbd/
+Oct 28 02:02:01 mariadbd[1380397]: contains instructions to obtain a better version of the backtrace below.
+Oct 28 02:02:01 mariadbd[1380397]: Following these instructions will help MariaDB developers provide a fix quicker.
+Oct 28 02:02:01 mariadbd[1380397]: Attempting backtrace. Include this in the bug report.
+Oct 28 02:02:01 mariadbd[1380397]: (note: Retrieving this information may fail)
+Oct 28 02:02:01 mariadbd[1380397]: Thread pointer: 0x0
+Oct 28 02:02:01 mariadbd[1380397]: stack_bottom = 0x0 thread_stack 0x49000
+Oct 28 02:02:01 mariadbd[1380397]: /usr/sbin/mariadbd(my_print_stacktrace+0x32)[0x5d295565d802]
+Oct 28 02:02:01 mariadbd[1380397]: /usr/sbin/mariadbd(handle_fatal_signal+0x229)[0x5d295511ac69]
+Oct 28 02:02:01 mariadbd[1380397]: libc_sigaction.c:0(__restore_rt)[0x7ff62b445330]
+Oct 28 02:02:01 mariadbd[1380397]: nptl/pthread_kill.c:44(__pthread_kill_implementation)[0x7ff62b49ec0c]
+Oct 28 02:02:01 mariadbd[1380397]: posix/raise.c:27(__GI_raise)[0x7ff62b44527e]
+Oct 28 02:02:01 mariadbd[1380397]: stdlib/abort.c:81(__GI_abort)[0x7ff62b4288ff]
+Oct 28 02:02:01 mariadbd[1380397]: /usr/sbin/mariadbd(+0x6d6ceb)[0x5d2954d1dceb]
+Oct 28 02:02:01 mariadbd[1380397]: /usr/sbin/mariadbd(+0x6e9bc0)[0x5d2954d30bc0]
+Oct 28 02:02:01 mariadbd[1380397]: /usr/sbin/mariadbd(+0xf5bb7b)[0x5d29555a2b7b]
+Oct 28 02:02:01 mariadbd[1380397]: /usr/sbin/mariadbd(+0xf1d06f)[0x5d295556406f]
+Oct 28 02:02:01 mariadbd[1380397]: /usr/sbin/mariadbd(+0xf1eef1)[0x5d2955565ef1]
+Oct 28 02:02:01 mariadbd[1380397]: /usr/sbin/mariadbd(+0xf20738)[0x5d2955567738]
+Oct 28 02:02:01 mariadbd[1380397]: /usr/sbin/mariadbd(+0xf209a2)[0x5d29555679a2]
+Oct 28 02:02:01 mariadbd[1380397]: /usr/sbin/mariadbd(+0xf2172b)[0x5d295556872b]
+Oct 28 02:02:01 mariadbd[1380397]: /lib/x86_64-linux-gnu/libstdc++.so.6(+0xecdb4)[0x7ff62b8ecdb4]
+Oct 28 02:02:01 mariadbd[1380397]: nptl/pthread_create.c:447(start_thread)[0x7ff62b49cb84]
+Oct 28 02:02:01 mariadbd[1380397]: x86_64/clone3.S:80(clone3)[0x7ff62b529ecc]
+Oct 28 02:02:01 mariadbd[1380397]: Writing a core file...
+Oct 28 02:02:01 mariadbd[1380397]: Working directory at /var/lib/mysql
+Oct 28 02:02:01 mariadbd[1380397]: Resource Limits (excludes unlimited resources):
+Oct 28 02:02:01 mariadbd[1380397]: Limit                     Soft Limit           Hard Limit           Units
+Oct 28 02:02:01 mariadbd[1380397]: Max stack size            8388608              unlimited            bytes
+Oct 28 02:02:01 mariadbd[1380397]: Max core file size        0                    unlimited            bytes
+Oct 28 02:02:01 mariadbd[1380397]: Max processes             125358               125358               processes
+Oct 28 02:02:01 mariadbd[1380397]: Max open files            32768                32768                files
+Oct 28 02:02:01 mariadbd[1380397]: Max locked memory         524288               524288               bytes
+Oct 28 02:02:01 mariadbd[1380397]: Max pending signals       125358               125358               signals
+Oct 28 02:02:01 mariadbd[1380397]: Max msgqueue size         819200               819200               bytes
+Oct 28 02:02:01 mariadbd[1380397]: Max nice priority         0                    0
+Oct 28 02:02:01 mariadbd[1380397]: Max realtime priority     0                    0
+Oct 28 02:02:01 mariadbd[1380397]: Core pattern: |/usr/share/apport/apport -p%p -s%s -c%c -d%d -P%P -u%u -g%g -F%F -- %E
+Oct 28 02:02:01 mariadbd[1380397]: Kernel version: Linux version 6.17.0-1033-oem (buildd@lcy02-amd64-085) (x86_64-linux-gnu-gcc-13 (Ubuntu 13.3.0-6ubuntu2~24.04.1) 13.3.0, GNU ld (GNU Binutils for Ubuntu) 2.42) #33-Ubuntu SMP PREEMPT_DYNAMIC Mon Aug 24 05:45:54 UTC 2026
+Oct 28 02:02:04 systemd[1]: mariadb.service: Main process exited, code=dumped, status=6/ABRT
+Oct 28 02:02:04 systemd[1]: mariadb.service: Failed with result 'core-dump'.
+Oct 28 02:02:04 systemd[1]: mariadb.service: Consumed 5min 35.173s CPU time, 153.5M memory peak, 0B memory swap peak.
+Oct 28 02:02:09 systemd[1]: mariadb.service: Scheduled restart job, restart counter is at 1.
+Oct 28 02:02:09 systemd[1]: Starting mariadb.service - MariaDB 10.11.14 database server...
+Oct 28 02:02:09 (mariadbd)[1391397]: mariadb.service: Referenced but unset environment variable evaluates to an empty string: MYSQLD_OPTS, _WSREP_NEW_CLUSTER
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] Starting MariaDB 10.11.14-MariaDB-0ubuntu0.24.04.1 source revision 053f9bcb5b147bf00edb99e1310bae9125b7f125 server_uid g8L8ogDFRP0lRju7Qx339PfQwts= as process 1391397
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Compressed tables use zlib 1.3
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Number of transaction pools: 1
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Using crc32 + pclmulqdq instructions
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Using io_uring
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: innodb_buffer_pool_size_max=128m, innodb_buffer_pool_size=128m
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Initialized memory pressure event listener
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Completed initialization of buffer pool
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: File system buffers for log disabled (block size=512 bytes)
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Starting crash recovery from checkpoint LSN=657973147
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: End of log at LSN=658050736
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: To recover: 4087 pages
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: 128 rollback segments are active.
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Removed temporary tablespace data file: "./ibtmp1"
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Setting file './ibtmp1' size to 12.000MiB. Physically writing the file full; Please wait ...
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: File './ibtmp1' size is now 12.000MiB.
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: log sequence number 658050736; transaction id 232239
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Creating #1 encryption thread id 139803316180672 total threads 4.
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Loading buffer pool(s) from /var/lib/mysql/ib_buffer_pool
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Creating #2 encryption thread id 139803307787968 total threads 4.
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Creating #3 encryption thread id 139803299395264 total threads 4.
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Creating #4 encryption thread id 139803291002560 total threads 4.
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] Plugin 'FEEDBACK' is disabled.
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] Using encryption key id 2 for temporary files
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Warning] You need to use --log-bin to make --expire-logs-days or --binlog-expire-logs-seconds work.
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] InnoDB: Buffer pool(s) load completed at 261028  2:02:09
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] DDL_LOG: Crash recovery executed 1 entries
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] Server socket created on IP: '127.0.0.1', port: '3306'.
+Oct 28 02:02:09 mariadbd[1391397]: 2026-10-28  2:02:09 0 [Note] /usr/sbin/mariadbd: ready for connections.
+Oct 28 02:02:09 mariadbd[1391397]: Version: '10.11.14-MariaDB-0ubuntu0.24.04.1'  socket: '/run/mysqld/mysqld.sock'  port: 3306  Ubuntu 24.04
+Oct 28 02:02:09 systemd[1]: Started mariadb.service - MariaDB 10.11.14 database server.
+Oct 28 02:06:20 mariadbd[1391397]: 2026-10-28  2:06:20 43 [Note] InnoDB: Sync to disk of `shop`.`users` started.
+Oct 28 02:06:20 mariadbd[1391397]: 2026-10-28  2:06:20 43 [Note] InnoDB: Stopping purge
+Oct 28 02:06:20 mariadbd[1391397]: 2026-10-28  2:06:20 43 [Note] InnoDB: Writing table metadata to './shop/users.cfg'
+Oct 28 02:06:20 mariadbd[1391397]: 2026-10-28  2:06:20 43 [Note] InnoDB: Table `shop`.`users` flushed to disk
+Oct 28 02:06:20 mariadbd[1391397]: 2026-10-28  2:06:20 43 [Note] InnoDB: Deleting the meta-data file './shop/users.cfg'
+Oct 28 02:06:20 mariadbd[1391397]: 2026-10-28  2:06:20 43 [Note] InnoDB: Resuming purge

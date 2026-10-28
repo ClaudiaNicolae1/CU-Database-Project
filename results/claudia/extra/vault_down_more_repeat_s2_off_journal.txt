@@ -1,0 +1,20 @@
+Oct 28 02:33:34 mariadbd[1414177]: 2026-10-28  2:33:34 0 [Note] InnoDB: Creating #1 encryption thread id 138492294198976 total threads 4.
+Oct 28 02:33:34 mariadbd[1414177]: 2026-10-28  2:33:34 0 [Note] InnoDB: Creating #2 encryption thread id 138492277413568 total threads 4.
+Oct 28 02:33:34 mariadbd[1414177]: 2026-10-28  2:33:34 0 [Note] InnoDB: Creating #3 encryption thread id 138492269020864 total threads 4.
+Oct 28 02:33:34 mariadbd[1414177]: 2026-10-28  2:33:34 0 [Note] InnoDB: Creating #4 encryption thread id 138492124329664 total threads 4.
+Oct 28 02:33:34 mariadbd[1414177]: 2026-10-28  2:33:34 0 [Note] Using encryption key id 2 for temporary files
+Oct 28 02:34:45 mariadbd[1414177]: 2026-10-28  2:34:45 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15001 milliseconds with 0 bytes received
+Oct 28 02:34:45 mariadbd[1414177]: 2026-10-28  2:34:45 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Oct 28 02:34:45 mariadbd[1414177]: 2026-10-28  2:34:45 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15002 milliseconds with 0 bytes received
+Oct 28 02:34:45 mariadbd[1414177]: 2026-10-28  2:34:45 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Oct 28 02:35:45 mariadbd[1414177]: 2026-10-28  2:35:45 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15002 milliseconds with 0 bytes received
+Oct 28 02:35:45 mariadbd[1414177]: 2026-10-28  2:35:45 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Oct 28 02:35:45 mariadbd[1414177]: 2026-10-28  2:35:45 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15002 milliseconds with 0 bytes received
+Oct 28 02:35:45 mariadbd[1414177]: 2026-10-28  2:35:45 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Oct 28 02:35:45 mariadbd[1414177]: 2026-10-28  2:35:45 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15001 milliseconds with 0 bytes received
+Oct 28 02:35:45 mariadbd[1414177]: 2026-10-28  2:35:45 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Oct 28 02:35:45 mariadbd[1414177]: 2026-10-28  2:35:45 0 [ERROR] InnoDB: Encrypted page [page id: space=14, page number=1] in file ./shop/products.ibd looks corrupted; key_version=1
+Oct 28 02:35:45 mariadbd[1414177]: 2026-10-28  2:35:45 0 [ERROR] InnoDB: Failed to read page 1 from file './shop/products.ibd': Table is compressed or encrypted but uncompress or decrypt failed.
+Oct 28 02:35:45 mariadbd[1414177]: 2026-10-28  2:35:45 0 [ERROR] InnoDB: File './shop/products.ibd' is corrupted
+Oct 28 02:35:46 mariadbd[1414177]: InnoDB: Failing assertion: key_version != ENCRYPTION_KEY_VERSION_INVALID
+Oct 28 02:35:46 mariadbd[1414177]: 261028  2:35:46 [ERROR] /usr/sbin/mariadbd got signal 6 ;

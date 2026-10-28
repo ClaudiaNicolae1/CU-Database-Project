@@ -5,3 +5,4 @@ vault-keys*
 *.log
 data/
 results/*/vault_down_*_rounds.txt
+results/*/vault_down_*_errors.txt

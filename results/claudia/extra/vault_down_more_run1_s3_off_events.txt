@@ -1,0 +1,4 @@
+scenario 3, use-cache-on-timeout=off, mariadb  Ver 15.1 Distrib 10.11.14-MariaDB, for debian-linux-gnu (x86_64) using  EditLine wrapper
+new version of key 2 written at 10s
+vault paused at 15s
+vault resumed at 171s

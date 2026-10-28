@@ -1,0 +1,4 @@
+scenario 2, use-cache-on-timeout=off, mariadb  Ver 15.1 Distrib 10.11.14-MariaDB, for debian-linux-gnu (x86_64) using  EditLine wrapper
+server CPU time at start: 0 s
+vault paused, load for 90s
+server CPU time after the load: 333 s (the cache timeout counts CPU seconds)

@@ -1,0 +1,5 @@
+Oct 28 01:43:29 mariadbd[798798]: 2026-10-28  1:43:29 0 [Note] InnoDB: Creating #1 encryption thread id 125292202903232 total threads 4.
+Oct 28 01:43:29 mariadbd[798798]: 2026-10-28  1:43:29 0 [Note] InnoDB: Creating #2 encryption thread id 125292194510528 total threads 4.
+Oct 28 01:43:29 mariadbd[798798]: 2026-10-28  1:43:29 0 [Note] InnoDB: Creating #3 encryption thread id 125292106475200 total threads 4.
+Oct 28 01:43:29 mariadbd[798798]: 2026-10-28  1:43:29 0 [Note] InnoDB: Creating #4 encryption thread id 125292098082496 total threads 4.
+Oct 28 01:43:29 mariadbd[798798]: 2026-10-28  1:43:29 0 [Note] Using encryption key id 2 for temporary files

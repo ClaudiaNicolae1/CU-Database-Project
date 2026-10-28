@@ -1,0 +1,3 @@
+create encrypted table, key 2 (after the load) | error: -------------- CREATE TABLE shop.t_paused1 (id INT) ENCRYPTED=YES ENCRYPTION_KEY_ID=2 --------------  ERROR 2013 (HY000) at line 1: Lost connection to server during query  | 42.1 s
+create encrypted table, key 1 (after the load) | error: ERROR 2002 (HY000): Can't connect to local server through socket '/run/mysqld/mysqld.sock' (111)  | 0.0 s
+read users (key 2) | error: ERROR 2002 (HY000): Can't connect to local server through socket '/run/mysqld/mysqld.sock' (111)  | 0.0 s

@@ -1,0 +1,3 @@
+create encrypted table, key 2 (after the load) | ok | 0.0 s
+create encrypted table, key 1 (after the load) | ok | 0.0 s
+read users (key 2) | ok | 0.0 s

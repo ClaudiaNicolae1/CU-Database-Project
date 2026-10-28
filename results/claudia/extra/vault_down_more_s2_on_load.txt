@@ -1,0 +1,4 @@
+worker 4: 491 rounds, 0 errors
+worker 1: 496 rounds, 0 errors
+worker 2: 492 rounds, 0 errors
+worker 3: 496 rounds, 0 errors

@@ -1,0 +1,11 @@
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Creating #1 encryption thread id 140694492497600 total threads 4.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Creating #2 encryption thread id 140694404462272 total threads 4.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Creating #3 encryption thread id 140694396069568 total threads 4.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] InnoDB: Creating #4 encryption thread id 140694387676864 total threads 4.
+Oct 28 01:59:59 mariadbd[1380397]: 2026-10-28  1:59:59 0 [Note] Using encryption key id 2 for temporary files
+Oct 28 02:01:09 mariadbd[1380397]: 2026-10-28  2:01:09 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15002 milliseconds with 0 bytes received
+Oct 28 02:01:09 mariadbd[1380397]: 2026-10-28  2:01:09 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Oct 28 02:01:09 mariadbd[1380397]: 2026-10-28  2:01:09 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15002 milliseconds with 0 bytes received
+Oct 28 02:01:09 mariadbd[1380397]: 2026-10-28  2:01:09 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Oct 28 02:02:01 mariadbd[1380397]: InnoDB: Failing assertion: key_version != ENCRYPTION_KEY_VERSION_INVALID
+Oct 28 02:02:01 mariadbd[1380397]: 261028  2:02:01 [ERROR] /usr/sbin/mariadbd got signal 6 ;

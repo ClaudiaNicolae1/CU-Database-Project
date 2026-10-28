@@ -1,0 +1,7 @@
+Oct 28 02:08:53 mariadbd[1392121]: 2026-10-28  2:08:53 0 [Note] InnoDB: Creating #1 encryption thread id 130396037572288 total threads 4.
+Oct 28 02:08:53 mariadbd[1392121]: 2026-10-28  2:08:53 0 [Note] InnoDB: Creating #2 encryption thread id 130395945301696 total threads 4.
+Oct 28 02:08:53 mariadbd[1392121]: 2026-10-28  2:08:53 0 [Note] InnoDB: Creating #3 encryption thread id 130395811083968 total threads 4.
+Oct 28 02:08:53 mariadbd[1392121]: 2026-10-28  2:08:53 0 [Note] InnoDB: Creating #4 encryption thread id 130395936908992 total threads 4.
+Oct 28 02:08:53 mariadbd[1392121]: 2026-10-28  2:08:53 0 [Note] Using encryption key id 2 for temporary files
+Oct 28 02:13:43 mariadbd[1392121]: 2026-10-28  2:13:43 2010 [Warning] Aborted connection 2010 to db: 'unconnected' user: 'root' host: 'localhost' (Got an error writing communication packets)
+Oct 28 02:13:43 mariadbd[1392121]: 2026-10-28  2:13:43 2011 [Warning] Aborted connection 2011 to db: 'unconnected' user: 'root' host: 'localhost' (Got an error writing communication packets)
