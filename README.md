@@ -11,6 +11,24 @@ Two results stand out:
 - With the default settings of MariaDB 10.11.14, the Vault key plugin made encrypted throughput about 15 times lower than unencrypted. One plugin option removes the problem (see "Findings").
 - When Vault is unreachable, a restart of MariaDB fails, and a running server whose cached key information had expired crashed in both of our runs (see "What happens when the key manager is unavailable").
 
+## Contents
+
+- [What the project covers](#what-the-project-covers): the goals of the area and where each one is done
+- [What is in the repo](#what-is-in-the-repo)
+- [Requirements and versions](#requirements-and-versions)
+- [Setup (Ubuntu 24.04)](#setup-ubuntu-2404): the commands to reproduce everything
+- [Data model](#data-model): the six tables and why they are split this way
+- [How encryption is set up in MariaDB](#how-encryption-is-set-up-in-mariadb)
+- [Method of the measurements](#method-of-the-measurements)
+- [Findings: one Vault plugin setting caused a ~15x slowdown](#findings-one-vault-plugin-setting-caused-a-15x-slowdown): the main result
+  - [How the cause was found](#how-the-cause-was-found)
+- [Results on different machines](#results-on-different-machines)
+- [Key rotation while serving traffic](#key-rotation-while-serving-traffic)
+- [What the data files show before and after](#what-the-data-files-show-before-and-after)
+- [What happens when the key manager is unavailable](#what-happens-when-the-key-manager-is-unavailable): the observation, the controlled test and the extra tests
+  - [Extra tests: what a running server needs from Vault](#extra-tests-what-a-running-server-needs-from-vault-beyond-what-the-area-asks)
+- [Limits](#limits)
+
 ## What the project covers
 
 | Goal of the area | Where | Status |
