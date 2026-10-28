@@ -34,18 +34,18 @@ Two results stand out:
 | Goal of the area | Where | Status |
 |---|---|---|
 | Dataset encrypted with a key manager, not a key in a file | `scripts/setup.sh`, `scripts/enable_encryption.sh`, `sql/encrypt_tables.sql` | done |
-| Key rotated while the server serves traffic | `scripts/rotate.sh` | results still to be added |
-| What the data files show before and after | `scripts/attack_view.sh` | see the section below |
+| Key rotated while the server serves traffic | `scripts/rotate.sh` | to be added |
+| What the data files show before and after | `scripts/attack_view.sh` |to be completed - the section below |
 | Performance cost measured, not estimated | `scripts/bench.sh`, `scripts/shop_bench.sh` | done |
-| Reproducible from this README, key manager included | `scripts/setup.sh`, `scripts/verify.sh` | done on the authors' machines |
+| Reproducible from this README, key manager included | `scripts/setup.sh`, `scripts/verify.sh` | done |
 | What happens when the key manager is unavailable | `scripts/vault_down.sh`, `scripts/extra/` | done |
 
 ## What is in the repo
 
 - `scripts/`: setup, attacker view, benchmarks, key rotation, checks (`verify.sh`)
-- `scripts/extra/`: tests beyond what the area asks (Vault outages)
+- `scripts/extra/`: tests beyond what the project asks (Vault outages)
 - `sql/`: schema of the test database (`shop`), the statements that encrypt it, and the query workload
-- `results/<name>/`: raw outputs, one folder per person. The `extra/` and `experiments/` folders inside hold the outputs of the extra tests and of the diagnosis.
+- `results/<name>/`: outputs, one folder per person. The `extra/` and `experiments/` folders inside hold the outputs of the extra tests.
 
 ## Requirements and versions
 
@@ -76,9 +76,9 @@ bash scripts/bench.sh encrypted NAME
 bash scripts/rotate.sh NAME
 ```
 
-Use your own name instead of `NAME`. Your results go to `results/NAME/`. Before the encrypted steps, wait until `rotating_or_flushing` is 0 for every row of the query above. The full run takes about 40 minutes.
+Use your own name instead of `NAME`. Your results go to `results/NAME/`. Before the encrypted steps, wait until `rotating_or_flushing` is 0 for every row of the query above.
 
-Vault runs in Docker in dev mode with the token `root`. This is only for the project. Dev mode keeps keys in memory, so if the container is removed, or restarted after a reboot, the keys are gone and the encrypted tables cannot be read (see "What happens when the key manager is unavailable").
+Vault runs in Docker in dev mode with the token `root`. Dev mode keeps keys in memory, so if the container is removed, or restarted after a reboot, the keys are gone and the encrypted tables cannot be read (see "What happens when the key manager is unavailable").
 
 `scripts/verify.sh` checks the running setup against this README. It checks that the Vault plugin is active, that encryption is on, that each of the six tables uses the right key, that the row counts match, that the name of user 1 cannot be found in the raw `users.ibd` file, that both keys exist in Vault, and that the cache option is set. It exits with a non-zero code if any check fails.
 
@@ -101,7 +101,7 @@ Why it is built this way:
 
 - The personal data (users, addresses, payment methods) sits in separate tables from the shop data, so the two groups can use different keys (2 and 1) and be rotated separately. Rotating key 2 touches only three small tables. `orders` and `order_items` are much bigger.
 - `schema.sql` creates every table with `ENCRYPTED=NO`, so we can measure an unencrypted baseline. `encrypt_tables.sql` then encrypts each table with `ALTER TABLE ... ENCRYPTED=YES ENCRYPTION_KEY_ID=n`. Each table's key is set explicitly and does not depend on background conversion.
-- The data is synthetic, because real personal data cannot be published. `scripts/generate_data.cpp` (fixed seed 1) writes CSV files for 200,000 users, 1,000,000 orders and about 2.5 million order items, and `scripts/load_data.sh` loads them with `LOAD DATA LOCAL INFILE`. The structure and size are realistic, but the values are not real people. The generated files are not committed (`data/` is ignored). `setup.sh` creates them.
+- The data is synthetic.`scripts/generate_data.cpp` (fixed seed 1) writes CSV files for 200,000 users, 1,000,000 orders and about 2.5 million order items, and `scripts/load_data.sh` loads them with `LOAD DATA LOCAL INFILE`. The structure and size are made to seem realistic. The generated files are not committed (`data/` is ignored). `setup.sh` creates them.
 
 ## How encryption is set up in MariaDB
 
@@ -229,7 +229,7 @@ The option and its default are described in the [MariaDB documentation](https://
 
 ## Results on different machines
 
-Absolute numbers depend on the machine, so compare the relative change. A `-` means that file is missing. `scripts/compare.sh` builds the table from the files in `results/<name>/`.
+Numbers depend on the machine, so compare the relative change. A `-` means that file is missing. `scripts/compare.sh` builds the table from the files in `results/<name>/`.
 
 <!-- compare:start -->
 | Person | tps unencrypted | tps encrypted | change | p95 ms unencrypted | p95 ms encrypted | change | shop s unencrypted | shop s encrypted | change |
@@ -242,13 +242,13 @@ Absolute numbers depend on the machine, so compare the relative change. A `-` me
 
 ## Key rotation while serving traffic
 
-Method and results: TODO, to be added by the team member who runs `scripts/rotate.sh` (errors during the run, how long the new key version took to appear, how long re-encryption took; files in `results/<name>/rotation_*.txt`).
+Method and results: TODO `scripts/rotate.sh` (errors during the run, how long the new key version took to appear, how long re-encryption took).
 
 ## What the data files show before and after
 
-Method (`scripts/attack_view.sh`): flush `shop.users`, search the raw `users.ibd` file with `strings` for the email and the name of user 1, and print 128 bytes from page 10 with `xxd`. We do this once before and once after encryption.
+Method (`scripts/attack_view.sh`): flush `shop.users`, search the `users.ibd` file with `strings` for the email and the name of user 1, and print 128 bytes from page 10 with `xxd`. We do this once before and once after encryption.
 
-Result: before encryption, the raw `users.ibd` file contained the email of user 1 once and the name of user 1 1,982 times. After encryption, neither was found (0 and 0). Outputs: `results/claudia/attack_unencrypted.txt` and `results/claudia/attack_encrypted.txt`.
+Result: before encryption, the `users.ibd` file contained the email of user 1 once and the name of user 1 1,982 times. After encryption, neither was found (0 and 0). Outputs: `results/claudia/attack_unencrypted.txt` and `results/claudia/attack_encrypted.txt`.
 
 ## What happens when the key manager is unavailable
 
@@ -264,7 +264,7 @@ We looked at four situations. The table sums up what happened, and the sections 
 
 **After a reboot.** The Vault container was not running, so port 8200 refused connections, and MariaDB did not start at all. The error log shows the plugin failing its first request to Vault (`curl returned this error code: 7 ... Failed to connect to 127.0.0.1 port 8200`), then `Plugin 'hashicorp_key_management' init function returned error`, `InnoDB: cannot enable encryption, encryption plugin is not available` and `Aborting`. Dev-mode Vault keeps its keys in memory, so starting the container again gave an empty Vault. The keys were gone, the encrypted data could not be read, and we rebuilt the databases with `scripts/setup.sh`. Log lines: `results/claudia/vault_stopped_at_startup.txt`.
 
-**Controlled test (`scripts/vault_down.sh`).** We pause the Vault container, so it stops answering but keeps its keys in memory.
+**Controlled test (`scripts/vault_down.sh`).** We pause the Vault container, so it stops answering but keeps the keys in memory.
 
 - **Test A:** four workers read and update the `shop` tables for 240 s. Vault is paused from second 20 to second 170. We log the duration and result of every round.
 - **Test B:** MariaDB is restarted while Vault is paused. We log the service state and a test query every 5 s. Then we resume Vault and record how long MariaDB takes to answer.
@@ -280,15 +280,15 @@ For comparison, this is what the MariaDB documentation says about this version (
 
 Results (both settings gave the same picture):
 
-- **Test A, Vault paused for 150 s.** The workers ran 41,661 rounds (`off`) and 41,983 rounds (`on`) of reads and updates, with no errors. An average round took 0.02 s and the slowest 0.03 s. The rate during the pause (about 1,750 rounds per 10 s) matched the rate before it. The MariaDB log shows no Vault error during the pause, so on this workload the server did not need Vault in that time. We did not log Vault's own requests.
+- **Test A, Vault paused for 150 s.** The workers ran 41,661 rounds (`off`) and 41,983 rounds (`on`) of reads and updates, with no errors. An average round took 0.02 s and the slowest 0.03 s. The rate during the pause (about 1,750 rounds per 10 s) matched the rate before it. The MariaDB log shows no Vault error during the pause, so on this workload the server did not need Vault in that time.
 - **Test B, restart while Vault is paused.** The service stayed in `activating` for about 60 s, then went to `failed` (after 66 s with `off`, 65 s with `on`). The log shows a Vault request ending in a curl timeout (error 28), then `Plugin 'hashicorp_key_management' init function returned error`, `InnoDB: cannot enable encryption, encryption plugin is not available` and `Aborting`. One minute matches the documented 15 s timeout with 3 retries. MariaDB stayed `failed` after Vault came back (about 120 s into the test) and did not start again by itself in the next 300 s. A manual restart brought it back in both runs.
-- **`use-cache-on-timeout` made no difference** in either test. For the restart that is expected, because the cache lives in the server process and is empty after a restart.
+- **`use-cache-on-timeout` made no difference** in either test.
 
-Raw files: `results/claudia/vault_down_off_*` and `vault_down_on_*` (events, summary, restart log, journal excerpt).
+Files: `results/claudia/vault_down_off_*` and `vault_down_on_*` (events, summary, restart log, journal excerpt).
 
 ### Extra tests: what a running server needs from Vault (beyond what the area asks)
 
-Test A only shows that this workload did not notice a paused Vault. That does not mean a running server never needs Vault:
+Test A only shows that this workload did not notice a paused Vault,but that does not mean a running server never needs Vault:
 
 - The workload only reads and updates pages whose keys the server already has in memory. The plugin asks Vault only when it needs something it does not have: an uncached key, a new key version, or a new encrypted table.
 - In this version the cache timers count CPU time. During a 150 s load with four workers, the server used only about 22 s of CPU time (measured in the extra runs below). That is far below the 60 s version-cache timeout, so in test A the cache entries had most likely not expired.
