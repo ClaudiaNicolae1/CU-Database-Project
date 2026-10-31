@@ -6,3 +6,4 @@ vault-keys*
 data/
 results/*/vault_down_*_rounds.txt
 results/*/vault_down_*_errors.txt
+results/*/run_all.log

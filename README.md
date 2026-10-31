@@ -59,6 +59,18 @@ Two results stand out:
 
 ## Setup (Ubuntu 24.04)
 
+One command runs everything, from installing the packages to the key rotation. It stops at the first step that fails and writes a log to `results/NAME/run_all.log`:
+
+```bash
+git clone https://github.com/ClaudiaNicolae1/CU-Database-Project.git
+cd CU-Database-Project
+bash scripts/run_all.sh NAME
+```
+
+Use it on a fresh Ubuntu 24.04 machine, because it reloads the data and compares encrypted against unencrypted runs. `DRY_RUN=1 bash scripts/run_all.sh NAME` only prints the steps.
+
+The same steps one by one:
+
 ```bash
 git clone https://github.com/ClaudiaNicolae1/CU-Database-Project.git
 cd CU-Database-Project
@@ -129,7 +141,7 @@ encrypt_tmp_files = ON
 - sysbench `oltp_read_write` on 8 tables with 500,000 rows each (`sbtest`), 8 threads, 60 s per run, 3 runs per configuration (`scripts/bench.sh`).
 - Encrypted runs start only after all eight tables show `encryption_scheme = 1` and `rotating_or_flushing = 0`. `bench.sh` waits for this.
 - Metrics: transactions per second and latency (average and 95th percentile) from sysbench. We list every run so the spread is visible.
-- `scripts/shop_bench.sh` times five queries on the `shop` tables with `mariadb-slap` (`sql/workload.sql`): a point lookup, a join, an update and two full-table aggregations.
+- `scripts/shop_bench.sh` times five queries on the `shop` tables with `mariadb-slap` (`sql/workload.sql`): a point lookup, a join, an update and two full-table aggregations. Four clients run the set three times. We ran it twice per state and kept the second run.
 
 ## Findings: one Vault plugin setting caused a ~15x slowdown
 
@@ -154,6 +166,8 @@ The individual runs (transactions/s and p95 latency in ms):
 | Encrypted, `cache-version-timeout=60000` | 2661 / 5.67 | 2196 / 6.91 | 2413 / 6.32 |
 
 Runs within one configuration differ by up to about 10%, so the real cost of encryption (about 9%) is hard to tell apart from the noise. We would call it 5 to 15%.
+
+**Shop queries.** `scripts/shop_bench.sh` ran the five queries in `sql/workload.sql` with 4 clients, 3 iterations each, and we ran it twice per state. The average time to run all queries was 8.3 s and 8.8 s unencrypted, and 8.2 s and 8.6 s encrypted. The two runs of the same state differ by 4 to 6%, which is more than the 3% between the states, so we see no measurable cost of encryption on this workload. (The encrypted runs being slightly faster is noise, not a benefit.) The sysbench benchmark above did show a cost of about 9%. The files hold the second run of each state (8.819 s and 8.566 s). The first runs are only in the terminal output. Files: `results/claudia/shop_unencrypted.txt` and `results/claudia/shop_encrypted.txt`.
 
 What we found:
 
@@ -234,7 +248,7 @@ Numbers depend on the machine, so compare the relative change. A `-` means that 
 <!-- compare:start -->
 | Person | tps unencrypted | tps encrypted | change | p95 ms unencrypted | p95 ms encrypted | change | shop s unencrypted | shop s encrypted | change |
 |---|---|---|---|---|---|---|---|---|---|
-| claudia | 2661 | 2423 | -9% | 4.74 | 6.30 | +33% | - | - | - |
+| claudia | 2661 | 2423 | -9% | 4.74 | 6.30 | +33% | 8.819 | 8.566 | -3% |
 | Daris | - | - | - | - | - | - | - | - | - |
 | Francisco | - | - | - | - | - | - | - | - | - |
 | Mercedes | - | 444 | - | - | 40.53 | - | - | 9.155 | - |
@@ -324,3 +338,4 @@ In short, a running server needs Vault as soon as it needs a key it does not hol
 - The Docker image `hashicorp/vault` is not pinned to a version.
 - The binary log is not enabled, so binlog encryption is not covered.
 - We tested only on Ubuntu 24.04. The only automated check is `scripts/verify.sh`.
+- `scripts/run_all.sh` has not been run from start to finish on a clean machine yet.

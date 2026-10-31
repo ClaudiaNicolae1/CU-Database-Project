@@ -27,8 +27,12 @@ n=$(q "SELECT COUNT(*) FROM shop.orders")
 
 name=$(q "SELECT full_name FROM shop.users WHERE user_id=1")
 sudo mariadb -e "FLUSH TABLES shop.users FOR EXPORT; UNLOCK TABLES;" 2>/dev/null
-c=$(sudo strings /var/lib/mysql/shop/users.ibd 2>/dev/null | grep -c "$name")
-[ "$c" = 0 ] && ok "name of user 1 not found in the raw users.ibd" || bad "name of user 1 found $c times in the raw users.ibd"
+if [ -z "$name" ]; then
+  bad "could not read user 1, so the raw-file check was skipped (is MariaDB answering?)"
+else
+  c=$(sudo strings /var/lib/mysql/shop/users.ibd 2>/dev/null | grep -c "$name")
+  [ "$c" = 0 ] && ok "name of user 1 not found in the raw users.ibd" || bad "name of user 1 found $c times in the raw users.ibd"
+fi
 
 for id in 1 2; do
   sudo docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault vault kv get mariadb/$id > /dev/null 2>&1 && ok "key $id exists in Vault" || bad "key $id missing in Vault"
