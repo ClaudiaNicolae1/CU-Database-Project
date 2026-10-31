@@ -44,7 +44,7 @@ Two results stand out:
 
 - `scripts/`: setup, attacker view, benchmarks, key rotation, checks (`verify.sh`)
 - `scripts/extra/`: tests beyond what the project asks (Vault outages)
-- `sql/`: schema of the test database (`shop`), the statements that encrypt it, and the query workload
+- `sql/`: schema of the test database (`shop`), the statements that encrypt it, and the query workload (`workload.sql` has no `USE` statement, so run it with the `shop` database selected, as `shop_bench.sh` does)
 - `results/<name>/`: outputs, one folder per person. The `extra/` and `experiments/` folders inside hold the outputs of the extra tests.
 
 ## Requirements and versions
@@ -266,7 +266,7 @@ Result: before encryption, the `users.ibd` file contained the email of user 1 on
 
 ## What happens when the key manager is unavailable
 
-We looked at four situations. The table sums up what happened, and the sections below give the details.
+The table sums up what happened in each situation we tested, and the sections below give the details.
 
 | Situation | What happened |
 |---|---|
@@ -275,6 +275,7 @@ We looked at four situations. The table sums up what happened, and the sections 
 | Vault is paused while the server runs normal queries | No effect for 150 s |
 | Vault is paused and the server needs a key it has not used | The operation fails after 60 s. Other sessions are not blocked |
 | Vault is paused and cached key information has expired | With `use-cache-on-timeout` off: the server crashed (2 of 2 runs) and systemd restarted it. With `on`: the server stayed up, but key operations waited 2 to 3 minutes |
+| A key id is missing from Vault (Vault is up) | `CREATE TABLE` and `ALTER TABLE` fail with errors that do not name the key (1005 and 1478). The real cause is only in the server log, as a note |
 
 **After a reboot.** The Vault container was not running, so port 8200 refused connections, and MariaDB did not start at all. The error log shows the plugin failing its first request to Vault (`curl returned this error code: 7 ... Failed to connect to 127.0.0.1 port 8200`), then `Plugin 'hashicorp_key_management' init function returned error`, `InnoDB: cannot enable encryption, encryption plugin is not available` and `Aborting`. Dev-mode Vault keeps its keys in memory, so starting the container again gave an empty Vault. The keys were gone, the encrypted data could not be read, and we rebuilt the databases with `scripts/setup.sh`. Log lines: `results/claudia/vault_stopped_at_startup.txt`.
 
@@ -325,6 +326,7 @@ Results:
   - **`use-cache-on-timeout` on:** the server stayed up. With a 100 s limit, both `CREATE TABLE` statements (key 2 and key 1) were still waiting (`vault_down_more_burn100_s2_on_*`). With a 300 s limit they finished after 160 s (key 2) and 120 s (key 1), and a plain read stayed instant (`vault_down_more_s2_on_*`).
 
   MariaDB's bug tracker lists the same assertion for other situations: [MDEV-9948](https://jira.mariadb.org/browse/MDEV-9948), [MDEV-8817](https://jira.mariadb.org/browse/MDEV-8817), and the open [MDEV-38141](https://jira.mariadb.org/browse/MDEV-38141) (Vault plugin, 12.2). We did not find a report with this trigger, though we only searched briefly.
+- **A key id that is missing from Vault (Vault is up).** With key id 99, which does not exist in Vault, `CREATE TABLE ... ENCRYPTED=YES ENCRYPTION_KEY_ID=99` failed with `ERROR 1005 (HY000)` and errno 140 "Wrong create options". An `ALTER TABLE` to key id 99 on an existing table failed with `ERROR 1478 (HY000): Table storage engine 'InnoDB' does not support the create option 'ENCRYPTION_KEY_ID'`. Neither message mentions the key, and both point at table options. The server log has the real cause: `hashicorp: Key not found (key id: 99)`. It is logged as a note, not as an error, so a search of the log for errors would miss it. Anyone who gets one of these errors should check the log and the key ids in Vault first. Files: `results/<name>/extra/missing_key_error.txt` and `missing_key_journal.txt`.
 - **Key rotation during an outage.** Not concluded. Scenario 3 ran only once and used too little server CPU time for the version cache to expire, so the key versions never changed, during the outage or after it (`vault_down_more_s3_off_*`).
 
 In short, a running server needs Vault as soon as it needs a key it does not hold in memory, or once a cached entry has expired. Until then it looks independent of Vault. With Vault unreachable, an expired entry made the server crash (`use-cache-on-timeout` off, 2 of 2 runs) or stall for minutes (`on`, one run each at the 100 s and 300 s limits).

@@ -1,0 +1,12 @@
+== CREATE TABLE with a key id that is not in Vault
+--------------
+CREATE TABLE shop.t_nokey (id INT) ENCRYPTED=YES ENCRYPTION_KEY_ID=99
+--------------
+
+ERROR 1005 (HY000) at line 1: Can't create table `shop`.`t_nokey` (errno: 140 "Wrong create options")
+== ALTER TABLE to a key id that is not in Vault
+--------------
+ALTER TABLE shop.t_nokey2 ENCRYPTION_KEY_ID=99
+--------------
+
+ERROR 1478 (HY000) at line 1: Table storage engine 'InnoDB' does not support the create option 'ENCRYPTION_KEY_ID'
