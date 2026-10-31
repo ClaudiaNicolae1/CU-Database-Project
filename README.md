@@ -98,7 +98,9 @@ cd CU-Database-Project
 bash scripts/run_all.sh NAME
 ```
 
-Use it on a fresh Ubuntu 24.04 machine, because it reloads the data and compares encrypted against unencrypted runs. `DRY_RUN=1 bash scripts/run_all.sh NAME` only prints the steps.
+It takes about an hour. That is an estimate, because we have not timed a full run: the data load alone takes 10 to 20 minutes, sysbench prepares 8 x 500,000 rows and runs six timed minutes, and the encryption steps wait for InnoDB to finish. The 10-command tutorial above is the short path.
+
+Use it on a fresh Ubuntu 24.04 machine. It stops at the start if the Vault key plugin is already configured (`/etc/mysql/mariadb.conf.d/60-encryption.cnf` exists) or if the `sbtest` tables are already encrypted, because the unencrypted baseline would then be measured on encrypted tables. `FORCE=1 bash scripts/run_all.sh NAME` skips that check, and the unencrypted numbers may then be wrong. `DRY_RUN=1 bash scripts/run_all.sh NAME` only prints the steps.
 
 The same steps one by one:
 
