@@ -11,8 +11,38 @@ Two results stand out:
 - **A plugin default made encryption 15 times slower.** On MariaDB 10.11.14, the Vault key plugin cut throughput by 93% with its default settings. One option fixes it (see "Findings").
 - **An unreachable Vault can take the server down.** MariaDB does not start without Vault. A running server crashed in both of our runs once its cached key information had expired (see "What happens when the key manager is unavailable").
 
+## Try it in 10 commands
+
+This shows the feature from start to finish: keys in Vault, the key plugin in MariaDB, six encrypted tables, and what the raw data file looks like before and after. You need Ubuntu 24.04 and 10 to 20 minutes, most of it for the data load. `me` is just the name of your results folder.
+
+```bash
+git clone https://github.com/ClaudiaNicolae1/CU-Database-Project.git
+cd CU-Database-Project
+bash scripts/setup.sh
+bash scripts/attack_view.sh unencrypted me
+bash scripts/enable_encryption.sh
+sudo mariadb < sql/encrypt_tables.sql
+sudo mariadb -e "SELECT name, current_key_id, current_key_version, rotating_or_flushing FROM information_schema.INNODB_TABLESPACES_ENCRYPTION WHERE name LIKE 'shop/%';"
+bash scripts/verify.sh
+bash scripts/attack_view.sh encrypted me
+sudo docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault vault kv metadata get mariadb/2
+```
+
+What each step does, and what you should see:
+
+1. `setup.sh` installs MariaDB and Vault, creates two keys in Vault (`mariadb/1` and `mariadb/2`), generates the data and loads about 4 million rows into the database `shop`, still unencrypted.
+2. The first `attack_view.sh` searches the raw data file `users.ibd` for the email and the name of user 1, the way someone with only the files would. In our run the email was found once and the name 1,982 times.
+3. `enable_encryption.sh` points MariaDB at Vault and turns encryption on. `encrypt_tables.sql` then encrypts the six tables: key 2 for the personal data (`users`, `addresses`, `payment_methods`), key 1 for the rest.
+4. The `SELECT` shows each table with its key id and key version. You should see six rows, key 2 on three and key 1 on three, version 1. If `rotating_or_flushing` is 1 on any row, run it again until it is 0.
+5. `verify.sh` runs 15 checks and should end with `ALL CHECKS PASSED`.
+6. The second `attack_view.sh` repeats the search on the encrypted file. Both counts should be 0.
+7. The last command shows the versions of key 2 in Vault (metadata only, not the key itself). It should list version 1 as the current version.
+
+Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault container while you use the encrypted tables (see "What happens when the key manager is unavailable"). The rest of this README covers the benchmarks, the slowdown we found, and the Vault outage tests.
+
 ## Contents
 
+- [Try it in 10 commands](#try-it-in-10-commands): the feature from start to finish
 - [What the project covers](#what-the-project-covers): the goals of the area and where each one is done
 - [What is in the repo](#what-is-in-the-repo)
 - [Requirements and versions](#requirements-and-versions)
@@ -21,12 +51,13 @@ Two results stand out:
 - [How encryption is set up in MariaDB](#how-encryption-is-set-up-in-mariadb)
 - [Method of the measurements](#method-of-the-measurements)
 - [Findings: one Vault plugin setting caused a ~15x slowdown](#findings-one-vault-plugin-setting-caused-a-15x-slowdown): the main result
-  - [How the cause was found](#how-the-cause-was-found)
+  - [How the cause was found](docs/slowdown-diagnosis.md): the commands and results of each experiment
 - [Results on different machines](#results-on-different-machines)
 - [Key rotation while serving traffic](#key-rotation-while-serving-traffic)
 - [What the data files show before and after](#what-the-data-files-show-before-and-after)
-- [What happens when the key manager is unavailable](#what-happens-when-the-key-manager-is-unavailable): the observation, the controlled test and the extra tests
-  - [Extra tests: what a running server needs from Vault](#extra-tests-what-a-running-server-needs-from-vault-beyond-what-the-area-asks)
+- [What happens when the key manager is unavailable](#what-happens-when-the-key-manager-is-unavailable): the summary table, with the details in docs/
+  - [Extra tests: what a running server needs from Vault](docs/vault-outages.md#extra-tests-what-a-running-server-needs-from-vault-beyond-what-the-area-asks)
+- [Where this approach loses](#where-this-approach-loses)
 - [Limits](#limits)
 
 ## What the project covers
@@ -185,61 +216,7 @@ hashicorp-key-management-cache-version-timeout = 60000
 
 Files: `results/claudia/encrypted_defaultcache_run*.txt` (before the fix) and `encrypted_run*.txt` (after). Outputs of the diagnosis: `results/claudia/experiments/` (`debug_encrypted.txt`, `exp_logoff_run1.txt`, `exp_logoff_run2.txt`, `debug_vault_cache.txt`).
 
-### How the cause was found
-
-```bash
-SB="--mysql-socket=/run/mysqld/mysqld.sock --mysql-user=sbtest --mysql-password=sbtest --mysql-db=sbtest --tables=8 --table-size=500000"
-```
-
-**1. Is it the cipher?** Check that the CPU has AES instructions, and watch CPU and disk during an encrypted run (`id` is CPU idle %, `wa` is disk wait %):
-
-```bash
-grep -m1 -o aes /proc/cpuinfo
-vmstat 10 6 > /tmp/vm.txt &
-sysbench oltp_read_write $SB --threads=8 --time=60 --report-interval=10 run
-wait
-cat /tmp/vm.txt
-```
-
-Result: `aes` was present. The first row of the `vmstat` output is an average since boot, so ignore it. CPU idle was 70% in the first 10 s, while throughput was still high, then 86 to 87%. Disk wait was 0 to 2%.
-
-**2. Is it the redo log?** Turn off redo log encryption, restart, and run twice:
-
-```bash
-sudo sed -i 's/innodb_encrypt_log = ON/innodb_encrypt_log = OFF/' /etc/mysql/mariadb.conf.d/60-encryption.cnf
-sudo systemctl restart mariadb
-for i in 1 2; do sysbench oltp_read_write $SB --threads=8 --time=60 --report-interval=10 run; done
-```
-
-Result: 194 and 207 tps, the same as with it on. The setting stayed off for the first part of step 3.
-
-**3. Is it the Vault plugin?** Turn on Vault's audit log and count its lines around a run:
-
-```bash
-v() { docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault vault "$@"; }
-v audit enable file file_path=stdout
-docker logs vault 2>&1 | wc -l
-sysbench oltp_read_write $SB --threads=8 --time=20 run
-docker logs vault 2>&1 | wc -l
-```
-
-Result with the default settings (redo log encryption was still off in this run): about 30,600 new audit lines in 20 s. Then we turned redo log encryption back on, set the cache option, restarted, and counted around two 60 s runs:
-
-```bash
-sudo sed -i 's/innodb_encrypt_log = OFF/innodb_encrypt_log = ON/' /etc/mysql/mariadb.conf.d/60-encryption.cnf
-echo "hashicorp-key-management-cache-version-timeout = 60000" | sudo tee -a /etc/mysql/mariadb.conf.d/60-encryption.cnf
-sudo systemctl restart mariadb
-for i in 1 2; do
-  docker logs vault 2>&1 | wc -l
-  sysbench oltp_read_write $SB --threads=8 --time=60 --report-interval=10 run
-  docker logs vault 2>&1 | wc -l
-done
-v audit disable file/
-```
-
-Result: 10 and 26 new lines, and throughput back to about 2400 tps. The restart in between wrote about 9,700 audit lines, but those fall outside the benchmark runs. InnoDB's own `keyserver_requests` counter did not change during a slow run (19 before and after), so it does not show these lookups. The audit log does.
-
-The option and its default are described in the [MariaDB documentation](https://mariadb.com/docs/server/security/encryption/data-at-rest-encryption/key-management-and-encryption-plugins/hashicorp-key-management-plugin).
+Step by step, with the commands and the result of each experiment: [docs/slowdown-diagnosis.md](docs/slowdown-diagnosis.md).
 
 ## Results on different machines
 
@@ -277,59 +254,17 @@ The table sums up what happened in each situation we tested, and the sections be
 | Vault is paused and cached key information has expired | With `use-cache-on-timeout` off: the server crashed (2 of 2 runs) and systemd restarted it. With `on`: the server stayed up, but key operations waited 2 to 3 minutes |
 | A key id is missing from Vault (Vault is up) | `CREATE TABLE` and `ALTER TABLE` fail with errors that do not name the key (1005 and 1478). The real cause is only in the server log, as a note |
 
-**After a reboot.** The Vault container was not running, so port 8200 refused connections, and MariaDB did not start at all. The error log shows the plugin failing its first request to Vault (`curl returned this error code: 7 ... Failed to connect to 127.0.0.1 port 8200`), then `Plugin 'hashicorp_key_management' init function returned error`, `InnoDB: cannot enable encryption, encryption plugin is not available` and `Aborting`. Dev-mode Vault keeps its keys in memory, so starting the container again gave an empty Vault. The keys were gone, the encrypted data could not be read, and we rebuilt the databases with `scripts/setup.sh`. Log lines: `results/claudia/vault_stopped_at_startup.txt`.
+Details, the full results and the file names are in [docs/vault-outages.md](docs/vault-outages.md): the observation after a reboot, the controlled test, what the MariaDB documentation says, and the extra tests.
 
-**Controlled test (`scripts/vault_down.sh`).** We pause the Vault container, so it stops answering but keeps the keys in memory.
+## Where this approach loses
 
-- **Test A:** four workers read and update the `shop` tables for 240 s. Vault is paused from second 20 to second 170. We log the duration and result of every round.
-- **Test B:** MariaDB is restarted while Vault is paused. We log the service state and a test query every 5 s. Then we resume Vault and record how long MariaDB takes to answer.
-
-Both tests ran once with `hashicorp-key-management-use-cache-on-timeout` set to `off` and once set to `on`.
-
-For comparison, this is what the MariaDB documentation says about this version (10.11.14):
-
-- When Vault does not answer, the plugin waits `hashicorp-key-management-timeout` (15 s by default) per request and retries 3 times.
-- `use-cache-on-timeout` is `OFF` by default here and covers only timeouts. From 10.11.16 it is `ON` by default and covers all errors, so a server keeps running on cached keys while Vault is briefly unreachable.
-- Keys and key versions are cached. In this version the cache times (including our `cache-version-timeout`) are measured in process CPU time, not wall-clock time. This was fixed in 10.11.19.
-- The plugin does not unseal Vault by itself.
-
-Results (both settings gave the same picture):
-
-- **Test A, Vault paused for 150 s.** The workers ran 41,661 rounds (`off`) and 41,983 rounds (`on`) of reads and updates, with no errors. An average round took 0.02 s and the slowest 0.03 s. The rate during the pause (about 1,750 rounds per 10 s) matched the rate before it. The MariaDB log shows no Vault error during the pause, so on this workload the server did not need Vault in that time.
-- **Test B, restart while Vault is paused.** The service stayed in `activating` for about 60 s, then went to `failed` (after 66 s with `off`, 65 s with `on`). The log shows a Vault request ending in a curl timeout (error 28), then `Plugin 'hashicorp_key_management' init function returned error`, `InnoDB: cannot enable encryption, encryption plugin is not available` and `Aborting`. One minute matches the documented 15 s timeout with 3 retries. MariaDB stayed `failed` after Vault came back (about 120 s into the test) and did not start again by itself in the next 300 s. A manual restart brought it back in both runs.
-- **`use-cache-on-timeout` made no difference** in either test.
-
-Files: `results/claudia/vault_down_off_*` and `vault_down_on_*` (events, summary, restart log, journal excerpt).
-
-### Extra tests: what a running server needs from Vault (beyond what the area asks)
-
-Test A only shows that this workload did not notice a paused Vault, but that does not mean a running server never needs Vault:
-
-- The workload only reads and updates pages whose keys the server already has in memory. The plugin asks Vault only when it needs something it does not have: an uncached key, a new key version, or a new encrypted table.
-- In this version the cache timers count CPU time. During a 150 s load with four workers, the server used only about 22 s of CPU time (measured in the extra runs below). That is far below the 60 s version-cache timeout, so in test A the cache entries had most likely not expired.
-- A paused Vault makes requests time out. A stopped Vault refuses connections at once (curl error 7). We tested a running server only with a paused Vault.
-
-The extra tests and their results are kept apart from the main material, in `scripts/extra/` and `results/<name>/extra/`.
-
-Two scripts:
-
-- `scripts/extra/vault_down_cold.sh`: MariaDB is restarted with Vault up, then Vault is paused right away. We time operations that need a key, each with a 100 s limit: reading two encrypted tables that were not read since the restart (keys 1 and 2), updating a row, and creating encrypted tables with key 2 and key 1. A second run adds a table with key 3, which exists in Vault but has not been used by the server since the restart. Each result is `ok`, an error or a timeout. We ran it with `use-cache-on-timeout` both `off` and `on`.
-- `scripts/extra/vault_down_more.sh`: three scenarios, each with a restart while Vault is up and then Vault paused. Scenario 1 starts a `CREATE TABLE` with key 3 that has to wait for Vault, and times other operations meanwhile. Scenario 2 first loads the server (`BURN=1` runs full-table scans, which use far more server CPU time than point queries) and then creates encrypted tables with key 2 and key 1. Scenario 3 writes a new version of key 2 just before Vault is paused and logs the key versions.
-
-Results:
-
-- **Keys 1 and 2 only.** All six operations succeeded in 0.3 s or less, in both modes. MariaDB probably loads both keys at startup (the log shows the key for temporary files, id 2, loaded then), so these operations never needed Vault. Files: `results/<name>/extra/vault_down_cold_run1_*`.
-- **A key the server had not used (key 3).** With Vault paused, `CREATE TABLE ... ENCRYPTED=YES ENCRYPTION_KEY_ID=3` failed after 60.0 s in both modes with `ERROR 1105 (HY000)`. With `off`, the message was `hashicorp: curl returned this error code: 28 ... Operation timed out after 15001 milliseconds with 0 bytes received`. That is the documented 15 s timeout, tried four times (the first try plus 3 retries). With `on`, the message was `hashicorp: Unable to get key data`. Our reading is that the plugin tried to fall back on a cached key and had none for key 3. The server kept running and answered again once Vault was back. The error only reached the client. The server log held only the startup lines. Full text: `results/<name>/extra/key3_error_off.txt` and `key3_error_on.txt`. Files: `results/<name>/extra/vault_down_cold_off_*` and `vault_down_cold_on_*`.
-- **Does the wait block other sessions?** No. While a `CREATE TABLE` with key 3 waited 60 s for the paused Vault, reads and an update on keys 1 and 2 ran every 3 s, and each took under 0.1 s. An operation that itself needs an uncached key would wait the same way. Files: `results/<name>/extra/vault_down_more_s1_off_*`.
-- **Does an expired cache entry cause failures?** Yes, once the server has used enough CPU time. The point-query load used only 22 s of CPU in 150 s and showed nothing (`vault_down_more_run1_s2_*`). Full-table scans used 333 to 336 s in 90 s. With Vault paused, `CREATE TABLE ... ENCRYPTION_KEY_ID=2` after that load went like this:
-  - **`use-cache-on-timeout` off (the default in this version):** the server crashed in both runs, 34.9 s and 42.1 s into the statement. The log shows failed Vault requests (curl error 28 after 15002 ms, then `Unable to get key data`), then `InnoDB: Failing assertion: key_version != ENCRYPTION_KEY_VERSION_INVALID` and `signal 6`. systemd restarted MariaDB a few seconds later (the unit has `Restart=on-abnormal`), and `scripts/verify.sh` passed afterwards. Files: `results/<name>/extra/vault_down_more_crash_s2_off_*` and `vault_down_more_s2_off_crash_journal.txt` (first run), `vault_down_more_repeat_s2_off_*` (second run).
-  - **`use-cache-on-timeout` on:** the server stayed up. With a 100 s limit, both `CREATE TABLE` statements (key 2 and key 1) were still waiting (`vault_down_more_burn100_s2_on_*`). With a 300 s limit they finished after 160 s (key 2) and 120 s (key 1), and a plain read stayed instant (`vault_down_more_s2_on_*`).
-
-  MariaDB's bug tracker lists the same assertion for other situations: [MDEV-9948](https://jira.mariadb.org/browse/MDEV-9948), [MDEV-8817](https://jira.mariadb.org/browse/MDEV-8817), and the open [MDEV-38141](https://jira.mariadb.org/browse/MDEV-38141) (Vault plugin, 12.2). We did not find a report with this trigger, though we only searched briefly.
-- **A key id that is missing from Vault (Vault is up).** With key id 99, which does not exist in Vault, `CREATE TABLE ... ENCRYPTED=YES ENCRYPTION_KEY_ID=99` failed with `ERROR 1005 (HY000)` and errno 140 "Wrong create options". An `ALTER TABLE` to key id 99 on an existing table failed with `ERROR 1478 (HY000): Table storage engine 'InnoDB' does not support the create option 'ENCRYPTION_KEY_ID'`. Neither message mentions the key, and both point at table options. The server log has the real cause: `hashicorp: Key not found (key id: 99)`. It is logged as a note, not as an error, so a search of the log for errors would miss it. Anyone who gets one of these errors should check the log and the key ids in Vault first. Files: `results/<name>/extra/missing_key_error.txt` and `missing_key_journal.txt`.
-- **Key rotation during an outage.** Not concluded. Scenario 3 ran only once and used too little server CPU time for the version cache to expire, so the key versions never changed, during the outage or after it (`vault_down_more_s3_off_*`).
-
-In short, a running server needs Vault as soon as it needs a key it does not hold in memory, or once a cached entry has expired. Until then it looks independent of Vault. With Vault unreachable, an expired entry made the server crash (`use-cache-on-timeout` off, 2 of 2 runs) or stall for minutes (`on`, one run each at the 100 s and 300 s limits).
+- **The database now depends on the key manager.** MariaDB did not start without Vault, and a running server crashed in both runs once its cached key information had expired while Vault was unreachable. A key file on the same disk has neither problem, but it keeps the key next to the data. We did not test that plugin, so we cannot say how much of the cost and fragility comes from Vault itself.
+- **Here, the key manager does not protect the key from someone on the machine.** Vault runs on the same host in dev mode, MariaDB reads the root token from its config file, and the keys sit in memory. Anyone with root on the host gets both the data files and the key. A real deployment would put Vault on another machine, with a limited token and persistent storage. We did not test that.
+- **Dev-mode Vault loses its keys when the container stops.** After a reboot this cost us the whole encrypted database twice, and we had to rebuild it.
+- **The cost depends on the workload and the settings.** About 9% on the sysbench read/write mix (5 to 15% with the noise), and 93% with the default cache setting of this version. Our shop queries showed no measurable cost.
+- **Errors and logs are hard to read.** A missing key id gives errors that do not name the key, and the cause is only a note in the log.
+- **It protects data at rest only.** The data files, the redo log and temporary files are covered. We did not test the binary log or backups, and anyone with SQL access still sees plain text.
+- **What we could not test:** other MariaDB versions, most results on other machines, real data, and long runs.
 
 ## Limits
 
