@@ -35,7 +35,7 @@ Two results stand out:
 |---|---|---|
 | Dataset encrypted with a key manager, not a key in a file | `scripts/setup.sh`, `scripts/enable_encryption.sh`, `sql/encrypt_tables.sql` | done |
 | Key rotated while the server serves traffic | `scripts/rotate.sh` | to be added |
-| What the data files show before and after | `scripts/attack_view.sh` |to be completed - the section below |
+| What the data files show before and after | `scripts/attack_view.sh` | done |
 | Performance cost measured, not estimated | `scripts/bench.sh`, `scripts/shop_bench.sh` | done |
 | Reproducible from this README, key manager included | `scripts/setup.sh`, `scripts/verify.sh` | done |
 | What happens when the key manager is unavailable | `scripts/vault_down.sh`, `scripts/extra/` | done |
@@ -45,7 +45,7 @@ Two results stand out:
 - `scripts/`: setup, attacker view, benchmarks, key rotation, checks (`verify.sh`)
 - `scripts/extra/`: tests beyond what the project asks (Vault outages)
 - `sql/`: schema of the test database (`shop`), the statements that encrypt it, and the query workload (`workload.sql` has no `USE` statement, so run it with the `shop` database selected, as `shop_bench.sh` does)
-- `results/<name>/`: outputs, one folder per person. The `extra/` and `experiments/` folders inside hold the outputs of the extra tests.
+- `results/<name>/`: outputs, one folder per person. The `extra/` folder inside holds the outputs of the extra tests, and `experiments/` the outputs of the diagnosis.
 
 ## Requirements and versions
 
@@ -113,7 +113,7 @@ Why it is built this way:
 
 - The personal data (users, addresses, payment methods) sits in separate tables from the shop data, so the two groups can use different keys (2 and 1) and be rotated separately. Rotating key 2 touches only three small tables. `orders` and `order_items` are much bigger.
 - `schema.sql` creates every table with `ENCRYPTED=NO`, so we can measure an unencrypted baseline. `encrypt_tables.sql` then encrypts each table with `ALTER TABLE ... ENCRYPTED=YES ENCRYPTION_KEY_ID=n`. Each table's key is set explicitly and does not depend on background conversion.
-- The data is synthetic.`scripts/generate_data.cpp` (fixed seed 1) writes CSV files for 200,000 users, 1,000,000 orders and about 2.5 million order items, and `scripts/load_data.sh` loads them with `LOAD DATA LOCAL INFILE`. The structure and size are made to seem realistic. The generated files are not committed (`data/` is ignored). `setup.sh` creates them.
+- The data is synthetic, because real personal data cannot be published. `scripts/generate_data.cpp` (fixed seed 1) writes CSV files for 200,000 users, 1,000,000 orders and about 2.5 million order items, and `scripts/load_data.sh` loads them with `LOAD DATA LOCAL INFILE`. The structure and size are made to seem realistic. The generated files are not committed (`data/` is ignored). `setup.sh` creates them.
 
 ## How encryption is set up in MariaDB
 
@@ -303,7 +303,7 @@ Files: `results/claudia/vault_down_off_*` and `vault_down_on_*` (events, summary
 
 ### Extra tests: what a running server needs from Vault (beyond what the area asks)
 
-Test A only shows that this workload did not notice a paused Vault,but that does not mean a running server never needs Vault:
+Test A only shows that this workload did not notice a paused Vault, but that does not mean a running server never needs Vault:
 
 - The workload only reads and updates pages whose keys the server already has in memory. The plugin asks Vault only when it needs something it does not have: an uncached key, a new key version, or a new encrypted table.
 - In this version the cache timers count CPU time. During a 150 s load with four workers, the server used only about 22 s of CPU time (measured in the extra runs below). That is far below the 60 s version-cache timeout, so in test A the cache entries had most likely not expired.
