@@ -13,7 +13,7 @@ Two results stand out:
 
 ## Try it in 10 commands
 
-This shows the feature from start to finish: keys in Vault, the key plugin in MariaDB, six encrypted tables, and what the raw data file looks like before and after. You need Ubuntu 24.04 and 10 to 20 minutes, most of it for the data load. `me` is just the name of your results folder.
+This shows the feature from start to finish: keys in Vault, the key plugin in MariaDB, six encrypted tables, and what the raw data file looks like before and after. You need Ubuntu 24.04. On our laptop this sequence takes a few minutes, mostly the data load. A slower machine or disk will take longer. `me` is just the name of your results folder.
 
 ```bash
 git clone https://github.com/ClaudiaNicolae1/CU-Database-Project.git
@@ -57,6 +57,7 @@ Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault co
 - [What the data files show before and after](#what-the-data-files-show-before-and-after)
 - [What happens when the key manager is unavailable](#what-happens-when-the-key-manager-is-unavailable): the summary table, with the details in docs/
   - [Extra tests: what a running server needs from Vault](docs/vault-outages.md#extra-tests-what-a-running-server-needs-from-vault-beyond-what-the-area-asks)
+- [Coverage of the MariaDB encryption documentation](#coverage-of-the-mariadb-encryption-documentation): what we used from each part
 - [Where this approach loses](#where-this-approach-loses)
 - [Limits](#limits)
 
@@ -65,7 +66,7 @@ Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault co
 | Goal of the area | Where | Status |
 |---|---|---|
 | Dataset encrypted with a key manager, not a key in a file | `scripts/setup.sh`, `scripts/enable_encryption.sh`, `sql/encrypt_tables.sql` | done |
-| Key rotated while the server serves traffic | `scripts/rotate.sh` | to be added |
+| Key rotated while the server serves traffic | `scripts/rotate_under_load.sh` | done |
 | What the data files show before and after | `scripts/attack_view.sh` | done |
 | Performance cost measured, not estimated | `scripts/bench.sh`, `scripts/shop_bench.sh` | done |
 | Reproducible from this README, key manager included | `scripts/setup.sh`, `scripts/verify.sh` | done |
@@ -98,7 +99,7 @@ cd CU-Database-Project
 bash scripts/run_all.sh NAME
 ```
 
-It takes about an hour. That is an estimate, because we have not timed a full run: the data load alone takes 10 to 20 minutes, sysbench prepares 8 x 500,000 rows and runs six timed minutes, and the encryption steps wait for InnoDB to finish. The 10-command tutorial above is the short path.
+It took about 21 minutes on our laptop, with the packages already installed. The longest step is the wait for InnoDB to encrypt the `sbtest` tables (about 9 minutes), followed by six timed minutes of sysbench and the 4-minute rotation test. A slower machine, and the package installation on a clean one, will take longer. The 10-command tutorial above is the short path.
 
 Use it on a fresh Ubuntu 24.04 machine. It stops at the start if the Vault key plugin is already configured (`/etc/mysql/mariadb.conf.d/60-encryption.cnf` exists) or if the `sbtest` tables are already encrypted, because the unencrypted baseline would then be measured on encrypted tables. `FORCE=1 bash scripts/run_all.sh NAME` skips that check, and the unencrypted numbers may then be wrong. `DRY_RUN=1 bash scripts/run_all.sh NAME` only prints the steps.
 
@@ -118,7 +119,7 @@ bash scripts/verify.sh
 bash scripts/attack_view.sh encrypted NAME
 bash scripts/shop_bench.sh encrypted NAME
 bash scripts/bench.sh encrypted NAME
-bash scripts/rotate.sh NAME
+bash scripts/rotate_under_load.sh NAME
 ```
 
 Use your own name instead of `NAME`. Your results go to `results/NAME/`. Before the encrypted steps, wait until `rotating_or_flushing` is 0 for every row of the query above.
@@ -252,7 +253,7 @@ encrypt_tmp_files = ON
 
 ## Findings: one Vault plugin setting caused a ~15x slowdown
 
-On MariaDB 10.11.14, encrypted throughput dropped by 93% with the default settings. One option brought it back to within about 9% of unencrypted.
+On MariaDB 10.11.14, encrypted throughput dropped by 93% with the default settings. One option brought most of it back: the cost fell to about 14% (9% in the first series, 20% in a repeat).
 
 Test machine: Lenovo ThinkPad T16 Gen 4, Intel(R) Core(TM) Ultra 5 225U, 14 threads, 32 GB, Ubuntu 24.04, MariaDB 10.11.14, sysbench 1.0.20. Numbers from other machines will differ.
 
@@ -272,9 +273,16 @@ The individual runs (transactions/s and p95 latency in ms):
 | Encrypted, default plugin settings | 194 / 240.0 | 190 / 227.4 | 153 / 350.3 |
 | Encrypted, `cache-version-timeout=60000` | 2661 / 5.67 | 2196 / 6.91 | 2413 / 6.32 |
 
-Runs within one configuration differ by up to about 10%, so the real cost of encryption (about 9%) is hard to tell apart from the noise. We would call it 5 to 15%.
+Runs within one configuration differ by up to about 10%, and the first run of a series is usually the fastest. The first unencrypted run of the repeat below falls from about 3,080 to about 2,540 tps after 25 s. A possible reason is that the laptop runs faster at the start and then settles, but we did not measure clock speeds. So the cost is hard to pin down from one series. The first series above gave about 9%. We repeated everything with `scripts/run_all.sh` on the same laptop (`results/claudia2/`):
 
-**Shop queries.** `scripts/shop_bench.sh` ran the five queries in `sql/workload.sql` with 4 clients, 3 iterations each, and we ran it twice per state. The average time to run all queries was 8.3 s and 8.8 s unencrypted, and 8.2 s and 8.6 s encrypted. The two runs of the same state differ by 4 to 6%, which is more than the 3% between the states, so we see no measurable cost of encryption on this workload. (The encrypted runs being slightly faster is noise, not a benefit.) The sysbench benchmark above did show a cost of about 9%. The files hold the second run of each state (8.819 s and 8.566 s). The first runs are only in the terminal output. Files: `results/claudia/shop_unencrypted.txt` and `results/claudia/shop_encrypted.txt`.
+| Configuration (repeat run) | Run 1 | Run 2 | Run 3 | Average tps | p95 latency (ms) |
+|---|---|---|---|---|---|
+| Unencrypted | 2719 / 4.74 | 2623 / 4.74 | 2642 / 4.65 | 2661 | 4.71 |
+| Encrypted, `cache-version-timeout=60000` | 2279 / 6.91 | 2084 / 7.43 | 2062 / 7.30 | 2142 | 7.21 |
+
+The repeat shows a cost of about 20% in throughput and 53% in p95 latency. Over all six runs per configuration the cost is about 14% in throughput (2661 against 2283 tps) and 43% in p95 latency (4.73 against 6.76 ms). We would call the cost 10 to 20% in throughput on this machine. The shop queries gave 8.5 s unencrypted and 9.1 s encrypted in the repeat (one run each). Over all six single numbers we have, the averages are 8.54 s and 8.63 s (+1%), so we still see no clear cost on that workload.
+
+**Shop queries.** `scripts/shop_bench.sh` ran the five queries in `sql/workload.sql` with 4 clients, 3 iterations each, and we ran it twice per state. The average time to run all queries was 8.3 s and 8.8 s unencrypted, and 8.2 s and 8.6 s encrypted. The two runs of the same state differ by 4 to 6%, which is more than the 3% between the states, so we see no measurable cost of encryption on this workload. (The encrypted runs being slightly faster is noise, not a benefit.) The sysbench benchmark above did show a cost of about 14% over all our runs. The files hold the second run of each state (8.819 s and 8.566 s). The first runs are only in the terminal output. Files: `results/claudia/shop_unencrypted.txt` and `results/claudia/shop_encrypted.txt`.
 
 What we found:
 
@@ -309,7 +317,14 @@ Numbers depend on the machine, so compare the relative change. A `-` means that 
 
 ## Key rotation while serving traffic
 
-Method and results: TODO `scripts/rotate.sh` (errors during the run, how long the new key version took to appear, how long re-encryption took).
+Method (`scripts/rotate_under_load.sh`): the script writes a new version of key 2 to Vault twice, at 20 s and at 61 s into a 240 s run, while 6 workers keep querying the `shop` tables. Four workers run full-table scans on `orders` (they use a lot of server CPU time, which the plugin's cache timers count). Two workers read and update the three tables that use key 2. Every 5 s the script records the key versions MariaDB sees, how many tables are still rotating and how many pages were re-encrypted.
+
+Results of one run on our laptop (`results/claudia2/rotation_events.txt`, `rotation_progress.txt` and `rotation_summary.txt`):
+
+- **No errors.** The workers ran 18,848 rounds (3,763 scans and 15,085 reads and updates) and none failed. The slowest scan took 0.41 s and the slowest read or update 0.06 s.
+- **MariaDB saw each new key version at once.** The first poll after each write already showed the new version (2 at 20 s, 3 at 61 s).
+- **The first new version did not start re-encryption. The second one did.** Within 5 s of version 3, `min_key_version` went from 1 to 2 and the background threads re-encrypted 2,699 pages. At the end (237 s) the maximum version was 3, the minimum was 2 and nothing was still rotating. This fits the default `innodb_encryption_rotate_key_age=1`, which only re-encrypts pages that are more than one version behind. We did not test that setting.
+- **Throughput stepped down about 13% after the second version, but over the whole run the difference is small.** Scan rounds per 10 s averaged 173 before 60 s and 150 between 60 s and 230 s. Read and update rounds averaged 690 and 601. A control run with the same load and no key writes (`results/claudia2/control/`, which started with the key 2 tables already at version 3) stayed flat: 154 and 162 scan rounds, 635 and 664 read and update rounds. So the step down is probably not just the laptop settling. It started when the second version arrived, but the re-encryption was finished within 5 s, so we do not know what keeps throughput down afterwards. Over the whole 240 s, the rotation run did 2% fewer scans (3,763 against 3,846) and 4.5% fewer reads and updates (15,085 against 15,791) than the control, because it was faster during the first 60 s. The slowest rounds were similar (scans 0.41 s against 0.35 s, reads and updates 0.06 s against 0.07 s). The two runs differ by about 10% in level, so with one run of each we say the cost of a rotation is small and not well measured.
 
 ## What the data files show before and after
 
@@ -332,12 +347,24 @@ The table sums up what happened in each situation we tested, and the sections be
 
 Details, the full results and the file names are in [docs/vault-outages.md](docs/vault-outages.md): the observation after a reboot, the controlled test, what the MariaDB documentation says, and the extra tests.
 
+## Coverage of the MariaDB encryption documentation
+
+The documentation page linked from the project area ([Data-at-rest encryption](https://mariadb.com/docs/server/security/encryption/data-at-rest-encryption)) has five parts. This table says what we did with each.
+
+| Part of the documentation | What we did |
+|---|---|
+| Data-at-rest encryption fundamentals | The idea runs through the whole project. `attack_view.sh` shows what someone with only the data files sees, before and after |
+| InnoDB encryption | Used in depth: table encryption with a key id per table, the encrypted redo log, temporary files (`encrypt_tmp_files`), the background encryption threads, key rotation and the `INNODB_TABLESPACES_ENCRYPTION` view. Not covered: forcing encryption for every table (`innodb_encrypt_tables=FORCE`) and encrypting InnoDB's temporary tables |
+| Key management and encryption plugins | The Vault plugin in depth: caching, timeouts, the token, and what happens when Vault fails. We did not use or compare the file key plugin or AWS KMS |
+| Binary log encryption | Not covered. The binary log is not enabled |
+| Aria encryption | Not covered |
+
 ## Where this approach loses
 
 - **The database now depends on the key manager.** MariaDB did not start without Vault, and a running server crashed in both runs once its cached key information had expired while Vault was unreachable. A key file on the same disk has neither problem, but it keeps the key next to the data. We did not test that plugin, so we cannot say how much of the cost and fragility comes from Vault itself.
 - **Here, the key manager does not protect the key from someone on the machine.** Vault runs on the same host in dev mode, MariaDB reads the root token from its config file, and the keys sit in memory. Anyone with root on the host gets both the data files and the key. A real deployment would put Vault on another machine, with a limited token and persistent storage. We did not test that.
 - **Dev-mode Vault loses its keys when the container stops.** After a reboot this cost us the whole encrypted database twice, and we had to rebuild it.
-- **The cost depends on the workload and the settings.** About 9% on the sysbench read/write mix (5 to 15% with the noise), and 93% with the default cache setting of this version. Our shop queries showed no measurable cost.
+- **The cost depends on the workload and the settings.** About 14% on the sysbench read/write mix (9 to 20% in our two full runs), and 93% with the default cache setting of this version. Our shop queries showed no measurable cost.
 - **Errors and logs are hard to read.** A missing key id gives errors that do not name the key, and the cause is only a note in the log.
 - **It protects data at rest only.** The data files, the redo log and temporary files are covered. We did not test the binary log or backups, and anyone with SQL access still sees plain text.
 - **What we could not test:** other MariaDB versions, most results on other machines, real data, and long runs.
@@ -352,3 +379,4 @@ Details, the full results and the file names are in [docs/vault-outages.md](docs
 - The binary log is not enabled, so binlog encryption is not covered.
 - We tested only on Ubuntu 24.04. The only automated check is `scripts/verify.sh`.
 - `scripts/run_all.sh` has not been run from start to finish on a clean machine yet.
+- The key rotation test and its control run are single runs on one laptop, with a load made to use a lot of CPU time. The two runs differ by about 10% in level, so the small cost of a rotation is not well measured.
