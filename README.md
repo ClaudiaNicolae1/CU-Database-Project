@@ -53,7 +53,7 @@ Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault co
 - [Findings: one Vault plugin setting caused a ~15x slowdown](#findings-one-vault-plugin-setting-caused-a-15x-slowdown): the main result
   - [How the cause was found](docs/slowdown-diagnosis.md): the commands and results of each experiment
 - [Results on different machines](#results-on-different-machines)
-- [Key rotation while serving traffic](#key-rotation-while-serving-traffic)
+- [Key rotation while serving traffic](#key-rotation-while-serving-traffic): the summary, with the details in docs/
 - [What the data files show before and after](#what-the-data-files-show-before-and-after)
 - [What happens when the key manager is unavailable](#what-happens-when-the-key-manager-is-unavailable): the summary table, with the details in docs/
   - [Extra tests: what a running server needs from Vault](docs/vault-outages.md#extra-tests-what-a-running-server-needs-from-vault-beyond-what-the-area-asks)
@@ -317,14 +317,13 @@ Numbers depend on the machine, so compare the relative change. A `-` means that 
 
 ## Key rotation while serving traffic
 
-Method (`scripts/rotate_under_load.sh`): the script writes a new version of key 2 to Vault twice, at 20 s and at 61 s into a 240 s run, while 6 workers keep querying the `shop` tables. Four workers run full-table scans on `orders` (they use a lot of server CPU time, which the plugin's cache timers count). Two workers read and update the three tables that use key 2. Every 5 s the script records the key versions MariaDB sees, how many tables are still rotating and how many pages were re-encrypted.
+We rotated key 2 (the three personal-data tables) twice, 40 s apart, while six workers kept querying the `shop` tables (`scripts/rotate_under_load.sh`, 240 s per run). We ran it three times, and three times as a control with the same load and no key writes.
 
-Results of one run on our laptop (`results/claudia2/rotation_events.txt`, `rotation_progress.txt` and `rotation_summary.txt`):
+- **No errors.** The three rotation runs made 57,944 rounds of scans, reads and updates, and none failed.
+- **MariaDB used each new key version within 15 s** and re-encrypted the old pages in the background: about 2,600 pages after the second new version, finished by the next 5 s poll.
+- **No measurable slowdown over a run.** The rotation runs did 0.6% fewer scans and 1.4% fewer reads and updates than the controls. One run showed a 13% step down that did not come back in two more rotations. A probe ruled out clock speed, temperature, Vault requests and background work.
 
-- **No errors.** The workers ran 18,848 rounds (3,763 scans and 15,085 reads and updates) and none failed. The slowest scan took 0.41 s and the slowest read or update 0.06 s.
-- **MariaDB saw each new key version at once.** The first poll after each write already showed the new version (2 at 20 s, 3 at 61 s).
-- **The first new version did not start re-encryption. The second one did.** Within 5 s of version 3, `min_key_version` went from 1 to 2 and the background threads re-encrypted 2,699 pages. At the end (237 s) the maximum version was 3, the minimum was 2 and nothing was still rotating. This fits the default `innodb_encryption_rotate_key_age=1`, which only re-encrypts pages that are more than one version behind. We did not test that setting.
-- **Throughput stepped down about 13% after the second version, but over the whole run the difference is small.** Scan rounds per 10 s averaged 173 before 60 s and 150 between 60 s and 230 s. Read and update rounds averaged 690 and 601. A control run with the same load and no key writes (`results/claudia2/control/`, which started with the key 2 tables already at version 3) stayed flat: 154 and 162 scan rounds, 635 and 664 read and update rounds. So the step down is probably not just the laptop settling. It started when the second version arrived, but the re-encryption was finished within 5 s, so we do not know what keeps throughput down afterwards. Over the whole 240 s, the rotation run did 2% fewer scans (3,763 against 3,846) and 4.5% fewer reads and updates (15,085 against 15,791) than the control, because it was faster during the first 60 s. The slowest rounds were similar (scans 0.41 s against 0.35 s, reads and updates 0.06 s against 0.07 s). The two runs differ by about 10% in level, so with one run of each we say the cost of a rotation is small and not well measured.
+Details, the full results and the file names are in [docs/key-rotation.md](docs/key-rotation.md): the method, the three runs and the probe.
 
 ## What the data files show before and after
 
@@ -379,4 +378,4 @@ The documentation page linked from the project area ([Data-at-rest encryption](h
 - The binary log is not enabled, so binlog encryption is not covered.
 - We tested only on Ubuntu 24.04. The only automated check is `scripts/verify.sh`.
 - `scripts/run_all.sh` has not been run from start to finish on a clean machine yet.
-- The key rotation test and its control run are single runs on one laptop, with a load made to use a lot of CPU time. The two runs differ by about 10% in level, so the small cost of a rotation is not well measured.
+- The key rotation test was run three times with rotation and three times as a control, on one laptop, with a load made to use a lot of CPU time. Runs differ by up to about 10% in level, so a small cost of rotation could be hidden.
