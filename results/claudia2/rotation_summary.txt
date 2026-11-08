@@ -1,0 +1,63 @@
+== key versions seen by MariaDB (from results/claudia2/rotation_progress.txt)
+version 2 visible at 20s (written at 20s)
+version 3 visible at 61s (written at 60s)
+at the end (237s): min_key_version=2 max_current_version=3 still_rotating=0, pages re-encrypted during the run=2699
+
+== scan workers, per 10 s: rounds, errors, average and slowest round in seconds
+from_s rounds errors avg_s max_s
+0 154 0 0.23 0.30
+10 174 0 0.22 0.26
+20 175 0 0.22 0.26
+30 181 0 0.22 0.25
+40 178 0 0.22 0.24
+50 178 0 0.22 0.25
+60 151 0 0.25 0.29
+70 153 0 0.26 0.37
+80 144 0 0.27 0.33
+90 149 0 0.26 0.33
+100 167 0 0.23 0.26
+110 144 0 0.27 0.34
+120 152 0 0.25 0.31
+130 143 0 0.27 0.36
+140 149 0 0.26 0.31
+150 153 0 0.25 0.33
+160 154 0 0.25 0.35
+170 153 0 0.25 0.30
+180 147 0 0.26 0.32
+190 147 0 0.26 0.35
+200 152 0 0.26 0.30
+210 146 0 0.26 0.31
+220 144 0 0.27 0.41
+230 167 0 0.23 0.28
+240 8 0 0.24 0.24
+total: 3763 rounds, 0 errors
+
+== point workers, per 10 s: rounds, errors, average and slowest round in seconds
+from_s rounds errors avg_s max_s
+0 592 0 0.02 0.03
+10 703 0 0.02 0.03
+20 698 0 0.02 0.03
+30 715 0 0.02 0.03
+40 722 0 0.02 0.03
+50 707 0 0.02 0.03
+60 611 0 0.02 0.04
+70 630 0 0.02 0.05
+80 575 0 0.03 0.04
+90 618 0 0.02 0.04
+100 687 0 0.02 0.03
+110 572 0 0.03 0.04
+120 612 0 0.02 0.04
+130 551 0 0.03 0.06
+140 600 0 0.02 0.03
+150 624 0 0.02 0.04
+160 634 0 0.02 0.03
+170 621 0 0.02 0.04
+180 587 0 0.03 0.06
+190 563 0 0.03 0.05
+200 597 0 0.02 0.04
+210 556 0 0.03 0.05
+220 586 0 0.03 0.05
+230 690 0 0.02 0.04
+240 34 0 0.02 0.03
+total: 15085 rounds, 0 errors
+
