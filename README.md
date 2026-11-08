@@ -140,7 +140,77 @@ The database `shop` has six InnoDB tables (`sql/schema.sql`):
 | `orders` | `order_id`, `user_id` (FK users) | date, status, total | 1 |
 | `order_items` | (`order_id`, `product_id`), FKs to orders and products | quantity, unit price | 1 |
 
-<!-- ER diagram goes here -->
+classDiagram
+direction TB
+
+class USERS {
+    INT user_id PK
+    VARCHAR full_name
+    VARCHAR email
+    VARCHAR phone
+    DATE birth_date
+    VARCHAR national_id
+    DATETIME created_at
+}
+
+class ADDRESSES {
+    INT address_id PK
+    INT user_id FK
+    VARCHAR street
+    VARCHAR city
+    VARCHAR postal_code
+    VARCHAR country
+}
+
+class PAYMENT_METHODS {
+    INT payment_id PK
+    INT user_id FK
+    VARCHAR card_holder
+    CHAR card_last4
+    CHAR card_token
+    CHAR expiry
+}
+
+class PRODUCTS {
+    INT product_id PK
+    VARCHAR name
+    VARCHAR category
+    DECIMAL price
+}
+
+class ORDERS {
+    INT order_id PK
+    INT user_id FK
+    DATETIME order_date
+    VARCHAR status
+    DECIMAL total
+}
+
+class ORDER_ITEMS {
+    INT order_id PK, FK
+    INT product_id PK, FK
+    INT quantity
+    DECIMAL unit_price
+}
+
+USERS "1" --> "0..*" ADDRESSES : has
+USERS "1" --> "0..*" PAYMENT_METHODS : owns
+USERS "1" --> "0..*" ORDERS : places
+ORDERS "1" --> "1..*" ORDER_ITEMS : contains
+PRODUCTS "1" --> "0..*" ORDER_ITEMS : included in
+
+**Legend**
+
+- **PK** – Primary Key
+- **FK** – Foreign Key
+- **1** – Exactly one
+- **0..*** – Zero or many
+- **1..*** – One or many
+- **1:1** – One-to-One relationship
+- **1:N** – One-to-Many relationship
+- **M:N** – Many-to-Many relationship
+- **Class (Rectangle)** – Represents a database table.
+- **Connecting Line** – Represents a relationship between tables.
 
 Why it is built this way:
 
