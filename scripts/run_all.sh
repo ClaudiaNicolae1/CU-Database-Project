@@ -78,10 +78,12 @@ run "check the setup" bash scripts/verify.sh
 run "attacker view after encryption" bash scripts/attack_view.sh encrypted $NAME
 run "shop queries after encryption" bash scripts/shop_bench.sh encrypted $NAME
 run "sysbench after encryption (waits for sbtest, then 3 runs of 60 s)" bash scripts/bench.sh encrypted $NAME
-if [ -f scripts/rotate.sh ]; then
-  run "key rotation under load" bash scripts/rotate.sh $NAME
+ROT=scripts/rotate.sh
+[ -f $ROT ] || ROT=scripts/rotate_under_load.sh
+if [ -f $ROT ]; then
+  run "key rotation under load" bash $ROT $NAME
 else
   n=$((n+1))
-  echo "[$n/$STEPS] key rotation: scripts/rotate.sh not found, skipped" | tee -a $LOG
+  echo "[$n/$STEPS] key rotation: no rotation script found, skipped" | tee -a $LOG
 fi
 echo "finished $(date) after $(( (SECONDS-T0)/60 )) min. Results are in results/$NAME/" | tee -a $LOG
