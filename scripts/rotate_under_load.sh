@@ -80,9 +80,9 @@ pids=""
 
 {
   echo "== key versions seen by MariaDB (from ${OUT}_progress.txt)"
-  awk -v v2=$V2 -v v3=$V3 'NR>1 && NF>=5 { if(!s2 && $3>=2) s2=$1; if(!s3 && $3>=3) s3=$1; if(!seen){p0=$5; seen=1} lt=$1; mn=$2; mx=$3; b=$4; p=$5 }
-    END { if(s2!="") printf "version 2 visible at %ss (written at %ss)\n", s2, v2; else print "version 2 was not seen during the run";
-          if(s3!="") printf "version 3 visible at %ss (written at %ss)\n", s3, v3; else print "version 3 was not seen during the run";
+  awk -v v2=$V2 -v v3=$V3 'NR>1 && NF>=5 { if(!seen){p0=$5; m0=$3; seen=1} if(!s2 && $3>=m0+1) s2=$1; if(!s3 && $3>=m0+2) s3=$1; lt=$1; mn=$2; mx=$3; b=$4; p=$5 }
+    END { if(v2>=9999) print "control run: no new key version was written"; else { if(s2!="") printf "first new key version visible at %ss (written at %ss)\n", s2, v2; else print "first new key version was not seen during the run";
+          if(s3!="") printf "second new key version visible at %ss (written at %ss)\n", s3, v3; else print "second new key version was not seen during the run"; }
           printf "at the end (%ss): min_key_version=%s max_current_version=%s still_rotating=%s, pages re-encrypted during the run=%d\n", lt, mn, mx, b, p-p0 }' ${OUT}_progress.txt
   echo
   for ty in scan point; do
