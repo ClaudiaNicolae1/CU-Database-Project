@@ -140,6 +140,9 @@ The database `shop` has six InnoDB tables (`sql/schema.sql`):
 | `orders` | `order_id`, `user_id` (FK users) | date, status, total | 1 |
 | `order_items` | (`order_id`, `product_id`), FKs to orders and products | quantity, unit price | 1 |
 
+**UML Diagram**
+
+```mermaid
 classDiagram
 direction TB
 
@@ -198,6 +201,7 @@ USERS "1" --> "0..*" PAYMENT_METHODS : owns
 USERS "1" --> "0..*" ORDERS : places
 ORDERS "1" --> "1..*" ORDER_ITEMS : contains
 PRODUCTS "1" --> "0..*" ORDER_ITEMS : included in
+```
 
 **Legend**
 
