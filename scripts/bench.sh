@@ -40,7 +40,11 @@ if [ "$LABEL" = encrypted ]; then
   done
 fi
 
+res(){ pid=$(pidof mariadbd | awk '{print $1}'); awk -v pid=$pid '{printf "rss_mb=%d cpu_s=%.0f\n", $24*4096/1048576, ($14+$15)/100}' /proc/$pid/stat 2>/dev/null; }
+RES=results/$WHO/${LABEL}_resources.txt
+: > $RES
 for i in 1 2 3; do
+  b=$(res)
   sysbench oltp_read_write $SB --threads=8 --time=60 --report-interval=10 run | tee results/$WHO/${LABEL}_run$i.txt
   rc=$?
   if [ $rc != 0 ]; then
@@ -48,4 +52,6 @@ for i in 1 2 3; do
     rm -f results/$WHO/${LABEL}_run$i.txt
     exit $rc
   fi
+  a=$(res)
+  echo "run$i before: $b | after: $a | server cpu used in the run: $(( ${a##*cpu_s=} - ${b##*cpu_s=} )) s | memavailable_mb=$(awk '/MemAvailable/ {printf "%d",$2/1024}' /proc/meminfo)" | tee -a $RES
 done

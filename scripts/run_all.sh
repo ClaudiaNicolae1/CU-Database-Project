@@ -1,8 +1,8 @@
 #!/bin/bash
 # usage: bash scripts/run_all.sh yourname
 # Runs every step of the project in order on a fresh Ubuntu 24.04 machine and stops at the first failure.
-# It took about 21 minutes on our laptop with the packages already installed: about 9 minutes waiting for the
-# sbtest tables to be encrypted, six timed minutes of sysbench and 4 minutes of rotation. A clean machine adds the package install.
+# It took about 21 minutes on our laptop with the packages already installed before the integrity checks and the
+# read-only and write-only runs were added; those add about 5 minutes. A clean machine adds the package install.
 # DRY_RUN=1 bash scripts/run_all.sh yourname   prints the steps without running them.
 # FORCE=1 bash scripts/run_all.sh yourname     skips the check for an already set up machine (the unencrypted numbers may then be wrong).
 NAME=${1:-$USER}
@@ -10,13 +10,13 @@ cd "$(dirname "$0")/.." || exit 1
 mkdir -p results/$NAME
 LOG=results/$NAME/run_all.log
 CNF=${CNF:-/etc/mysql/mariadb.conf.d/60-encryption.cnf}
-STEPS=12
+STEPS=16
 n=0
 T0=$SECONDS
 
 run(){
   n=$((n+1))
-  echo "[$n/$STEPS] $1" | tee -a $LOG
+  echo "[$n/$STEPS] $(date +%T) $1" | tee -a $LOG
   if [ -n "$DRY_RUN" ]; then return 0; fi
   shift
   "$@" 2>&1 | tee -a $LOG
@@ -66,18 +66,22 @@ if [ -z "$DRY_RUN" ]; then
   trap 'pkill -P $KEEP 2>/dev/null; kill $KEEP 2>/dev/null' EXIT
 fi
 
-echo "started $(date), results go to results/$NAME/. This took about 21 minutes on our laptop with the packages installed; a clean machine adds the package install." | tee -a $LOG
+echo "started $(date), results go to results/$NAME/. This took about 25 minutes on our laptop with the packages installed; a clean machine adds the package install." | tee -a $LOG
 run "install packages, start Vault, create keys, load the data" bash scripts/setup.sh
+run "integrity check and sizes before encryption" bash scripts/extra/integrity_check.sh unencrypted $NAME
 run "attacker view before encryption" bash scripts/attack_view.sh unencrypted $NAME
 run "shop queries before encryption" bash scripts/shop_bench.sh unencrypted $NAME
 run "sysbench before encryption (prepare, then 3 runs of 60 s)" bash scripts/bench.sh unencrypted $NAME
+run "read-only and write-only sysbench before encryption (2 x 60 s)" bash scripts/extra/rw_bench.sh unencrypted $NAME
 run "turn on encryption and the Vault key plugin" bash scripts/enable_encryption.sh
 run "encrypt the six shop tables" encrypt_tables
 run "wait until all shop tables are encrypted" wait_encrypted
 run "check the setup" bash scripts/verify.sh
+run "integrity check, sizes, new row and new table after encryption" bash scripts/extra/integrity_check.sh encrypted $NAME
 run "attacker view after encryption" bash scripts/attack_view.sh encrypted $NAME
 run "shop queries after encryption" bash scripts/shop_bench.sh encrypted $NAME
 run "sysbench after encryption (waits for sbtest, then 3 runs of 60 s)" bash scripts/bench.sh encrypted $NAME
+run "read-only and write-only sysbench after encryption (2 x 60 s)" bash scripts/extra/rw_bench.sh encrypted $NAME
 ROT=scripts/rotate.sh
 [ -f $ROT ] || ROT=scripts/rotate_under_load.sh
 if [ -f $ROT ]; then
@@ -87,3 +91,4 @@ else
   echo "[$n/$STEPS] key rotation: no rotation script found, skipped" | tee -a $LOG
 fi
 echo "finished $(date) after $(( (SECONDS-T0)/60 )) min. Results are in results/$NAME/" | tee -a $LOG
+bash scripts/stats.sh $NAME 2>/dev/null | tee -a $LOG
