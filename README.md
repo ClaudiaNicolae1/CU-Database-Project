@@ -31,11 +31,11 @@ sudo docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault v
 What each step does, and what you should see:
 
 1. `setup.sh` installs MariaDB and Vault, creates two keys in Vault (`mariadb/1` and `mariadb/2`), generates the data and loads about 4 million rows into the database `shop`, still unencrypted.
-2. The first `attack_view.sh` searches the raw data file `users.ibd` for the email and the name of user 1, the way someone with only the files would. In our run the email was found once and the name 1,982 times. The email belongs to user 1 only, while the generated names repeat, so the name matches every row that shares it.
+2. The first `attack_view.sh` searches the raw data file `users.ibd` for the email and the name of user 1, the way someone with only the files would. In our run the email was found once. The name was found 1,982 times, but the generated names repeat, so the name matches every row that shares it, while the email belongs to user 1 only.
 3. `enable_encryption.sh` points MariaDB at Vault and turns encryption on. `encrypt_tables.sql` then encrypts the six tables: key 2 for the personal data (`users`, `addresses`, `payment_methods`), key 1 for the rest.
 4. The `SELECT` shows each table with its key id and key version. You should see six rows, key 2 on three and key 1 on three, version 1. If `rotating_or_flushing` is 1 on any row, run it again until it is 0.
 5. `verify.sh` runs 15 checks and should end with `ALL CHECKS PASSED`.
-6. The second `attack_view.sh` repeats the search on the encrypted file. Both counts should be 0.
+6. The second `attack_view.sh` repeats the search on the encrypted file. The email count should be 0 (it was 1 before), and so should the name count.
 7. The last command shows the versions of key 2 in Vault (metadata only, not the key itself). It should list version 1 as the current version.
 
 Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault container while you use the encrypted tables (see "What happens when the key manager is unavailable"). The rest of this README covers the benchmarks, the slowdown we found, and the Vault outage tests.
@@ -330,7 +330,7 @@ Details, the full results and the file names are in [docs/key-rotation.md](docs/
 
 Method (`scripts/attack_view.sh`): flush `shop.users`, search the `users.ibd` file with `strings` for the email and the name of user 1, find where the email of user 1 sits in the file, and print 128 bytes around that spot with `xxd`. We do this once before and once after encryption, and after encryption we print the same byte range.
 
-Result: before encryption, the `users.ibd` file contained the email of user 1 once and the name of user 1 1,982 times (the generated names repeat, so that is the number of rows with that name, while the email belongs to user 1 only). After encryption, neither was found (0 and 0). Outputs: `results/claudia2/attack_unencrypted.txt` and `results/claudia2/attack_encrypted.txt`.
+Result: the email of user 1 is found once in the raw `users.ibd` file before encryption and 0 times after. That is the result to cite, because the email belongs to user 1 only. The name of user 1 is found 1,982 times before and 0 times after, but the generated names repeat, so that is the number of rows that share the name. The second full run gave the same counts. Outputs: `results/claudia2/attack_unencrypted.txt` and `results/claudia2/attack_encrypted.txt`.
 
 ## What happens when the key manager is unavailable
 
