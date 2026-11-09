@@ -19,6 +19,8 @@ We ran it three times with rotation and three times as a control, on one laptop:
 
 **No errors.** The three rotation runs made 57,944 rounds of scans, reads and updates in total, and none failed. The slowest round in any rotation run was 0.52 s for a scan and 0.06 s for a read or update. The controls reached 0.40 s and 0.07 s.
 
+**Vault's own record agrees with our logs.** `vault kv metadata get mariadb/2` lists seven versions: version 1 from the setup and two new versions for each of the three rotation runs. The two versions of each run were created 40.4 to 40.5 s apart (versions 2 and 3, 4 and 5, 6 and 7), and each was created within about a second of the write time in that run's `rotation_events.txt` (about 20 s and 60 to 61 s after the start of the run).
+
 **MariaDB does not use a new key version at once, but within 15 s.** The first run showed it at the very next poll, which made it look immediate. The two repeats show a delay of up to 15 s. Polls were every 5 s, so the delays are accurate to about 5 s.
 
 | Run | First new version written | Seen by MariaDB | Second new version written | Seen by MariaDB |

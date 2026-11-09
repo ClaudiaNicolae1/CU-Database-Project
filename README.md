@@ -13,7 +13,7 @@ Two results stand out:
 
 ## Try it in 10 commands
 
-This shows the feature from start to finish: keys in Vault, the key plugin in MariaDB, six encrypted tables, and what the raw data file looks like before and after. You need Ubuntu 24.04. On our laptop this sequence takes a few minutes, mostly the data load. A slower machine or disk will take longer. `me` is just the name of your results folder.
+This shows the feature from start to finish: keys in Vault, the key plugin in MariaDB, six encrypted tables, and what the raw data file looks like before and after. You need Ubuntu 24.04. On our laptop this sequence takes a few minutes, mostly the data load. A slower machine or disk will take longer. `me` is just the name of your results folder. This is the short path: it skips the benchmarks and the key rotation, which the full run in "Setup" below adds.
 
 ```bash
 git clone https://github.com/ClaudiaNicolae1/CU-Database-Project.git
@@ -36,7 +36,7 @@ What each step does, and what you should see:
 4. The `SELECT` shows each table with its key id and key version. You should see six rows, key 2 on three and key 1 on three, version 1. If `rotating_or_flushing` is 1 on any row, run it again until it is 0.
 5. `verify.sh` runs 15 checks and should end with `ALL CHECKS PASSED`.
 6. The second `attack_view.sh` repeats the search on the encrypted file. The email count should be 0 (it was 1 before), and so should the name count.
-7. The last command shows the versions of key 2 in Vault (metadata only, not the key itself). It should list version 1 as the current version.
+7. The last command shows the metadata of key 2 in Vault: `current_version` and, for each version, when it was created (the key itself is not shown). On a fresh setup it says `current_version 1`, with one version listed. Each rotation adds a version, so on our laptop, after three rotation runs, it says 7.
 
 Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault container while you use the encrypted tables (see "What happens when the key manager is unavailable"). The rest of this README covers the benchmarks, the slowdown we found, and the Vault outage tests.
 
@@ -103,7 +103,7 @@ It took about 21 minutes on our laptop, with the packages already installed. The
 
 Use it on a fresh Ubuntu 24.04 machine. It stops at the start if the Vault key plugin is already configured (`/etc/mysql/mariadb.conf.d/60-encryption.cnf` exists) or if the `sbtest` tables are already encrypted, because the unencrypted baseline would then be measured on encrypted tables. `FORCE=1 bash scripts/run_all.sh NAME` skips that check, and the unencrypted numbers may then be wrong. `DRY_RUN=1 bash scripts/run_all.sh NAME` only prints the steps.
 
-The same steps one by one:
+The same steps as `run_all.sh`, one by one. This is the full run, with the benchmarks and the key rotation. The 10-command demo above is the short version:
 
 ```bash
 git clone https://github.com/ClaudiaNicolae1/CU-Database-Project.git
