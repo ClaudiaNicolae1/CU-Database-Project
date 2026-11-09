@@ -36,11 +36,16 @@ for t in users addresses payment_methods products orders order_items; do
   f=$(sudo stat -c %s /var/lib/mysql/shop/$t.ibd 2>/dev/null)
   line "$t: data+index=$b file=$f"
 done
-line "total shop/*.ibd on disk: $(sudo du -cb /var/lib/mysql/shop/*.ibd 2>/dev/null | tail -1 | awk '{print $1}') bytes"
+line "total shop/*.ibd on disk: $(sudo sh -c 'du -cb /var/lib/mysql/shop/*.ibd' 2>/dev/null | tail -1 | awk '{print $1}') bytes"
 if [ "$LABEL" = encrypted ]; then
-  M="integritycheck$(date +%s)marker"
-  line "== new row: insert a row with the unique text $M into users, flush, and search the raw file (expect 0)"
-  q "INSERT INTO shop.users (user_id, full_name, email, phone, birth_date, national_id) SELECT 900000001, '$M', '$M@example.com', '0', birth_date, '$M' FROM shop.users WHERE user_id=1" >/dev/null
+  M="ic$(openssl rand -hex 3)"
+  line "== new row: insert a copy of user 1 as user 900000001, with the unique text $M in every string column that is long enough, flush, and search the raw file (expect 0)"
+  cols=""
+  while IFS=$'\t' read -r cn ct ln; do
+    case "$cn" in user_id) v=900000001;; *) case "$ct" in varchar*|char*|text*) if [ "${ln:-0}" -ge 8 ] 2>/dev/null || [ "$ln" = NULL ]; then v="'$M'"; else v="$cn"; fi;; *) v="$cn";; esac;; esac
+    cols="$cols${cols:+, }$v"
+  done < <(q "SELECT column_name, column_type, IFNULL(character_maximum_length,0) FROM information_schema.COLUMNS WHERE table_schema='shop' AND table_name='users' ORDER BY ordinal_position")
+  err=$(q "INSERT INTO shop.users SELECT $cols FROM shop.users WHERE user_id=1" | grep -v '^-*$' | tr '\n' ' ')
   n=$(q "SELECT COUNT(*) FROM shop.users WHERE user_id=900000001")
   if [ "$n" = 1 ]; then
     q "FLUSH TABLES shop.users FOR EXPORT; UNLOCK TABLES" >/dev/null
@@ -48,7 +53,7 @@ if [ "$LABEL" = encrypted ]; then
     line "matches of the new text in users.ibd: $c"; [ "$c" = 0 ] || fail=1
     q "DELETE FROM shop.users WHERE user_id=900000001" >/dev/null
   else
-    line "could not insert the test row (is the users schema different?): $n"; fail=1
+    line "could not insert the test row: $err"; fail=1
   fi
   line "== new table without an ENCRYPTED option (expect encryption_scheme 1 and the default key id)"
   q "DROP TABLE IF EXISTS shop.t_default_test; CREATE TABLE shop.t_default_test (id INT PRIMARY KEY, s VARCHAR(100)) ENGINE=InnoDB; INSERT INTO shop.t_default_test VALUES (1,'$M')" >/dev/null
