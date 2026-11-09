@@ -37,25 +37,43 @@ int main(){
 
     int a=0;
     for(int u=1;u<=200000;u++){
-        string name=pick(first)+" "+pick(last);
-        fprintf(users,"%d,%s,user%d@example.com,+49 %d,%d-%02d-%02d,%d,%d-%02d-%02d\n",u,name.c_str(),u,rnd(100000000,999999999),rnd(1940,2007),rnd(1,12),rnd(1,28),rnd(1000000000,2000000000),rnd(2023,2025),rnd(1,12),rnd(1,28));
+        // Each random value is drawn in its own statement, in a fixed order. The order in which C++ evaluates
+        // function arguments is unspecified, so draws inside one call can differ between compilers.
+        // This order is the one GCC used, so the data is the same as in our results.
+        string ln=pick(last);
+        string fn=pick(first);
+        string name=fn+" "+ln;
+        int cd=rnd(1,28), cm=rnd(1,12), cy=rnd(2023,2025);
+        int nid=rnd(1000000000,2000000000);
+        int bd=rnd(1,28), bm=rnd(1,12), by=rnd(1940,2007);
+        int phone=rnd(100000000,999999999);
+        fprintf(users,"%d,%s,user%d@example.com,+49 %d,%d-%02d-%02d,%d,%d-%02d-%02d\n",u,name.c_str(),u,phone,by,bm,bd,nid,cy,cm,cd);
 
         int n=1;
         if(rnd(1,10)<=3)n=2;
         for(int k=0;k<n;k++){
             a++;
-            fprintf(addr,"%d,%d,%d %s,%s,%d,%s\n",a,u,rnd(1,200),pick(street).c_str(),
-                pick(city).c_str(),rnd(10000,99999),pick(country).c_str());
+            string co=pick(country);
+            int pc=rnd(10000,99999);
+            string ci=pick(city);
+            string st=pick(street);
+            int no=rnd(1,200);
+            fprintf(addr,"%d,%d,%d %s,%s,%d,%s\n",a,u,no,st.c_str(),ci.c_str(),pc,co.c_str());
         }
 
-        fprintf(pay,"%d,%d,%s,%04d,%08x%08x%08x%08x,%02d/%d\n",u,u,name.c_str(),rnd(0,9999),
-            rnd(0,2000000000),rnd(0,2000000000),rnd(0,2000000000),rnd(0,2000000000),rnd(1,12),rnd(27,31));
+        int ey=rnd(27,31), em=rnd(1,12);
+        int t4=rnd(0,2000000000), t3=rnd(0,2000000000), t2=rnd(0,2000000000), t1=rnd(0,2000000000);
+        int last4=rnd(0,9999);
+        fprintf(pay,"%d,%d,%s,%04d,%08x%08x%08x%08x,%02d/%d\n",u,u,name.c_str(),last4,t1,t2,t3,t4,em,ey);
     }
 
     vector<double> price(5001);
     for(int p=1;p<=5000;p++){
         price[p]=rnd(100,50000)/100.0;
-        fprintf(prod,"%d,%s %d,%s,%.2f\n",p,pick(thing).c_str(),rnd(100,999),pick(category).c_str(),price[p]);
+        string cat=pick(category);
+        int num=rnd(100,999);
+        string th=pick(thing);
+        fprintf(prod,"%d,%s %d,%s,%.2f\n",p,th.c_str(),num,cat.c_str(),price[p]);
     }
 
     for(int o=1;o<=1000000;o++){
@@ -68,8 +86,10 @@ int main(){
             total+=q*price[p];
             fprintf(items,"%d,%d,%d,%.2f\n",o,p,q,price[p]);
         }
-        fprintf(orders,"%d,%d,%d-%02d-%02d,%s,%.2f\n",o,rnd(1,200000),rnd(2024,2025),
-            rnd(1,12),rnd(1,28),pick(status).c_str(),total);
+        string stt=pick(status);
+        int od=rnd(1,28), om=rnd(1,12), oy=rnd(2024,2025);
+        int uid=rnd(1,200000);
+        fprintf(orders,"%d,%d,%d-%02d-%02d,%s,%.2f\n",o,uid,oy,om,od,stt.c_str(),total);
     }
 
     fclose(users);

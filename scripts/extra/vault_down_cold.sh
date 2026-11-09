@@ -7,6 +7,8 @@ MODE=${2:-off}
 OPTIME=${OPTIME:-100}
 STEP=${STEP:-5}
 CNF=${CNF:-/etc/mysql/mariadb.conf.d/60-encryption.cnf}
+cd "$(dirname "$0")/../.." || exit 1
+[ -f $CNF ] || { echo "$CNF not found: run scripts/enable_encryption.sh first"; exit 1; }
 mkdir -p results/$WHO/extra
 OUT=results/$WHO/extra/vault_down_cold_$MODE
 

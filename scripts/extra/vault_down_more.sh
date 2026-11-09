@@ -13,6 +13,8 @@ R1=${R1:-10}
 P1=${P1:-12}
 U1=${U1:-170}
 CNF=${CNF:-/etc/mysql/mariadb.conf.d/60-encryption.cnf}
+cd "$(dirname "$0")/../.." || exit 1
+[ -f $CNF ] || { echo "$CNF not found: run scripts/enable_encryption.sh first"; exit 1; }
 mkdir -p results/$WHO/extra
 OUT=results/$WHO/extra/vault_down_more_s${S}_$MODE
 VAULT="sudo docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault vault"

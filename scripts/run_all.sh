@@ -66,7 +66,7 @@ if [ -z "$DRY_RUN" ]; then
   trap 'pkill -P $KEEP 2>/dev/null; kill $KEEP 2>/dev/null' EXIT
 fi
 
-echo "started $(date), results go to results/$NAME/. This took about 25 minutes on our laptop with the packages installed; a clean machine adds the package install." | tee -a $LOG
+echo "started $(date), results go to results/$NAME/. Our full run took about 21 minutes with the packages installed, before the integrity checks and the read-only and write-only runs were added (about 5 more minutes); a clean machine adds the package install." | tee -a $LOG
 run "install packages, start Vault, create keys, load the data" bash scripts/setup.sh
 run "integrity check and sizes before encryption" bash scripts/extra/integrity_check.sh unencrypted $NAME
 run "attacker view before encryption" bash scripts/attack_view.sh unencrypted $NAME

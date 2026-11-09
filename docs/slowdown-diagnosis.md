@@ -2,6 +2,7 @@
 
 [Back to the README](../README.md#findings-one-vault-plugin-setting-caused-a-15x-slowdown). The result is there. This page has the commands and the output of each experiment.
 
+These experiments ran before the fix was added to `scripts/enable_encryption.sh`, which now writes `hashicorp-key-management-cache-version-timeout = 60000`. To see the slow default again, delete that line from `/etc/mysql/mariadb.conf.d/60-encryption.cnf` and restart MariaDB, and skip the `echo ... | sudo tee -a` line in step 3 (the option is already there).
 
 ```bash
 SB="--mysql-socket=/run/mysqld/mysqld.sock --mysql-user=sbtest --mysql-password=sbtest --mysql-db=sbtest --tables=8 --table-size=500000"
@@ -32,11 +33,11 @@ Result: 194 and 207 tps, the same as with it on. The setting stayed off for the 
 **3. Is it the Vault plugin?** Turn on Vault's audit log and count its lines around a run:
 
 ```bash
-v() { docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault vault "$@"; }
+v() { sudo docker exec -e VAULT_ADDR=http://127.0.0.1:8200 -e VAULT_TOKEN=root vault vault "$@"; }
 v audit enable file file_path=stdout
-docker logs vault 2>&1 | wc -l
+sudo docker logs vault 2>&1 | wc -l
 sysbench oltp_read_write $SB --threads=8 --time=20 run
-docker logs vault 2>&1 | wc -l
+sudo docker logs vault 2>&1 | wc -l
 ```
 
 Result with the default settings (redo log encryption was still off in this run): about 30,600 new audit lines in 20 s. Then we turned redo log encryption back on, set the cache option, restarted, and counted around two 60 s runs:
@@ -46,9 +47,9 @@ sudo sed -i 's/innodb_encrypt_log = OFF/innodb_encrypt_log = ON/' /etc/mysql/mar
 echo "hashicorp-key-management-cache-version-timeout = 60000" | sudo tee -a /etc/mysql/mariadb.conf.d/60-encryption.cnf
 sudo systemctl restart mariadb
 for i in 1 2; do
-  docker logs vault 2>&1 | wc -l
+  sudo docker logs vault 2>&1 | wc -l
   sysbench oltp_read_write $SB --threads=8 --time=60 --report-interval=10 run
-  docker logs vault 2>&1 | wc -l
+  sudo docker logs vault 2>&1 | wc -l
 done
 v audit disable file/
 ```

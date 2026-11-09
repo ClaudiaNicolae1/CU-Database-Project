@@ -53,5 +53,7 @@ for i in 1 2 3; do
     exit $rc
   fi
   a=$(res)
-  echo "run$i before: $b | after: $a | server cpu used in the run: $(( ${a##*cpu_s=} - ${b##*cpu_s=} )) s | memavailable_mb=$(awk '/MemAvailable/ {printf "%d",$2/1024}' /proc/meminfo)" | tee -a $RES
+  cb=${b##*cpu_s=}; ca=${a##*cpu_s=}
+  if [ -n "$cb" ] && [ -n "$ca" ]; then used=$((ca-cb)); else used="?"; fi
+  echo "run$i before: ${b:-?} | after: ${a:-?} | server cpu used in the run: $used s | memavailable_mb=$(awk '/MemAvailable/ {printf "%d",$2/1024}' /proc/meminfo)" | tee -a $RES
 done

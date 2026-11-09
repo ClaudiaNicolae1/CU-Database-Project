@@ -65,17 +65,17 @@ Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault co
 
 | Goal of the area | Where | Status |
 |---|---|---|
-| Dataset encrypted with a key manager, not a key in a file | `scripts/setup.sh`, `scripts/enable_encryption.sh`, `sql/encrypt_tables.sql` | done |
+| Dataset encrypted with a key manager, not a key in a file | `scripts/setup.sh`, `scripts/enable_encryption.sh`, `sql/encrypt_tables.sql`, `scripts/extra/integrity_check.sh` | done |
 | Key rotated while the server serves traffic | `scripts/rotate_under_load.sh` | done |
 | What the data files show before and after | `scripts/attack_view.sh` | done |
-| Performance cost measured, not estimated | `scripts/bench.sh`, `scripts/shop_bench.sh` | done |
+| Performance cost measured, not estimated | `scripts/bench.sh`, `scripts/shop_bench.sh`, `scripts/extra/rw_bench.sh` | done |
 | Reproducible from this README, key manager included | `scripts/setup.sh`, `scripts/verify.sh` | done |
 | What happens when the key manager is unavailable | `scripts/vault_down.sh`, `scripts/extra/` | done |
 
 ## What is in the repo
 
-- `scripts/`: setup, attacker view, benchmarks, key rotation, checks (`verify.sh`)
-- `scripts/extra/`: tests beyond what the project asks (Vault outages)
+- `scripts/`: setup, attacker view, benchmarks, key rotation, checks (`verify.sh`), and `stats.sh` (mean and standard deviation of the sysbench runs)
+- `scripts/extra/`: tests beyond what the project asks: Vault outages, the rotation probe, the integrity check and the read-only and write-only sysbench runs
 - `sql/`: schema of the test database (`shop`), the statements that encrypt it, and the query workload (`workload.sql` has no `USE` statement, so run it with the `shop` database selected, as `shop_bench.sh` does)
 - `results/<name>/`: outputs, one folder per person. The `extra/` folder inside holds the outputs of the extra tests, and `experiments/` the outputs of the diagnosis.
 
@@ -83,7 +83,7 @@ Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault co
 
 - Ubuntu 24.04 on a native install. Other systems are untested.
 - MariaDB 10.11.14 (Ubuntu package) with `mariadb-plugin-hashicorp-key-management`
-- HashiCorp Vault 2.1.1, run in Docker in dev mode (image `hashicorp/vault`)
+- HashiCorp Vault 2.1.1, run in Docker in dev mode (image `hashicorp/vault:2.1.1`)
 - sysbench 1.0.20, g++ (builds the data generator), binutils and xxd (attacker view)
 - `sudo` rights and several GB of free disk space
 
@@ -99,7 +99,7 @@ cd CU-Database-Project
 bash scripts/run_all.sh NAME
 ```
 
-It took about 21 minutes on our laptop, with the packages already installed. The longest step is the wait for InnoDB to encrypt the `sbtest` tables (about 9 minutes), followed by six timed minutes of sysbench and the 4-minute rotation test. A slower machine, and the package installation on a clean one, will take longer. The 10-command tutorial above is the short path.
+It took about 21 minutes on our laptop, with the packages already installed. The longest step is the wait for InnoDB to encrypt the `sbtest` tables (about 9 minutes), followed by six timed minutes of sysbench and the 4-minute rotation test. The integrity checks and the read-only and write-only sysbench runs were added after that run and add about 5 minutes (four more timed minutes of sysbench). A slower machine, and the package installation on a clean one, will take longer. The 10-command tutorial above is the short path.
 
 Use it on a fresh Ubuntu 24.04 machine. It stops at the start if the Vault key plugin is already configured (`/etc/mysql/mariadb.conf.d/60-encryption.cnf` exists) or if the `sbtest` tables are already encrypted, because the unencrypted baseline would then be measured on encrypted tables. `FORCE=1 bash scripts/run_all.sh NAME` skips that check, and the unencrypted numbers may then be wrong. `DRY_RUN=1 bash scripts/run_all.sh NAME` only prints the steps.
 
@@ -109,17 +109,22 @@ The same steps as `run_all.sh`, one by one. This is the full run, with the bench
 git clone https://github.com/ClaudiaNicolae1/CU-Database-Project.git
 cd CU-Database-Project
 bash scripts/setup.sh
+bash scripts/extra/integrity_check.sh unencrypted NAME
 bash scripts/attack_view.sh unencrypted NAME
 bash scripts/shop_bench.sh unencrypted NAME
 bash scripts/bench.sh unencrypted NAME
+bash scripts/extra/rw_bench.sh unencrypted NAME
 bash scripts/enable_encryption.sh
 sudo mariadb < sql/encrypt_tables.sql
 sudo mariadb -e "SELECT name, current_key_id, rotating_or_flushing FROM information_schema.INNODB_TABLESPACES_ENCRYPTION WHERE name LIKE 'shop/%';"
 bash scripts/verify.sh
+bash scripts/extra/integrity_check.sh encrypted NAME
 bash scripts/attack_view.sh encrypted NAME
 bash scripts/shop_bench.sh encrypted NAME
 bash scripts/bench.sh encrypted NAME
+bash scripts/extra/rw_bench.sh encrypted NAME
 bash scripts/rotate_under_load.sh NAME
+bash scripts/stats.sh NAME
 ```
 
 Use your own name instead of `NAME`. Your results go to `results/NAME/`. Before the encrypted steps, wait until `rotating_or_flushing` is 0 for every row of the query above.
@@ -221,7 +226,7 @@ Why it is built this way:
 
 - The personal data (users, addresses, payment methods) sits in separate tables from the shop data, so the two groups can use different keys (2 and 1) and be rotated separately. Rotating key 2 touches only three small tables. `orders` and `order_items` are much bigger.
 - `schema.sql` creates every table with `ENCRYPTED=NO`, so we can measure an unencrypted baseline. `encrypt_tables.sql` then encrypts each table with `ALTER TABLE ... ENCRYPTED=YES ENCRYPTION_KEY_ID=n`. Each table's key is set explicitly and does not depend on background conversion.
-- The data is synthetic, because real personal data cannot be published. `scripts/generate_data.cpp` (fixed seed 1) writes CSV files for 200,000 users, 1,000,000 orders and about 2.5 million order items, and `scripts/load_data.sh` loads them with `LOAD DATA LOCAL INFILE`. The structure and size are made to seem realistic. The generated files are not committed (`data/` is ignored). `setup.sh` creates them.
+- The data is synthetic, because real personal data cannot be published. `scripts/generate_data.cpp` (fixed seed 1, and a fixed order of the random draws, so every compiler gives the same data) writes CSV files for 200,000 users, 1,000,000 orders and about 2.5 million order items, and `scripts/load_data.sh` loads them with `LOAD DATA LOCAL INFILE`. The structure and size are made to seem realistic. The generated files are not committed (`data/` is ignored). `setup.sh` creates them.
 
 ## How encryption is set up in MariaDB
 
@@ -330,7 +335,15 @@ Details, the full results and the file names are in [docs/key-rotation.md](docs/
 
 Method (`scripts/attack_view.sh`): flush `shop.users`, search the `users.ibd` file with `strings` for the email and the name of user 1, find where the email of user 1 sits in the file, and print 128 bytes around that spot with `xxd`. We do this once before and once after encryption, and after encryption we print the same byte range.
 
-Result: the email of user 1 is found once in the raw `users.ibd` file before encryption and 0 times after. That is the result to cite, because the email belongs to user 1 only. The name of user 1 is found 1,982 times before and 0 times after, but the generated names repeat, so that is the number of rows that share the name. The second full run gave the same counts. Outputs: `results/claudia2/attack_unencrypted.txt` and `results/claudia2/attack_encrypted.txt`.
+Result: the email of user 1 is found once in the raw `users.ibd` file before encryption and 0 times after. That is the result to cite, because the email belongs to user 1 only. The name of user 1 is found 1,982 times before and 0 times after, but the generated names repeat, so that is the number of rows that share the name. The second full run gave the same email counts (1 and 0) and 1,981 and 0 for the name. Outputs: `results/claudia2/attack_unencrypted.txt` and `results/claudia2/attack_encrypted.txt`. (Daris's files show a different user 1, `Felix Klein`. Before the generator fixed the order of its random draws, a different compiler could produce different data from the same seed.)
+
+**New data and integrity** (`scripts/extra/integrity_check.sh`, run once on the encrypted setup, `results/claudia2/integrity_encrypted.txt`):
+
+- `CHECK TABLE` gave `OK` for all six tables, the row counts match the generated data, and no foreign key points to a missing row.
+- A new row written after encryption (a copy of user 1 with a unique marker in every text column) was not found in the raw `users.ibd` file after a flush.
+- A new table created without an `ENCRYPTED` option was encrypted with key 1 (`innodb_default_encryption_key_id`).
+- A new table created with `ENCRYPTED=NO` was accepted and stayed unencrypted (`encryption_scheme = 0`). With `innodb_encrypt_tables = ON`, anyone who can create tables can opt out of encryption. `innodb_encrypt_tables = FORCE` would refuse that. We did not test `FORCE`.
+- The six `.ibd` files take 291 MB on disk. The size before encryption has not been recorded yet, so we cannot say yet whether encryption changes it.
 
 ## What happens when the key manager is unavailable
 
@@ -354,7 +367,7 @@ The documentation page linked from the project area ([Data-at-rest encryption](h
 | Part of the documentation | What we did |
 |---|---|
 | Data-at-rest encryption fundamentals | The idea runs through the whole project. `attack_view.sh` shows what someone with only the data files sees, before and after |
-| InnoDB encryption | Used in depth: table encryption with a key id per table, the encrypted redo log, temporary files (`encrypt_tmp_files`), the background encryption threads, key rotation and the `INNODB_TABLESPACES_ENCRYPTION` view. Not covered: forcing encryption for every table (`innodb_encrypt_tables=FORCE`) and encrypting InnoDB's temporary tables |
+| InnoDB encryption | Used in depth: table encryption with a key id per table, the encrypted redo log, temporary files (`encrypt_tmp_files`), the background encryption threads, key rotation and the `INNODB_TABLESPACES_ENCRYPTION` view. We showed that with `ON` a new table can opt out with `ENCRYPTED=NO` (`integrity_check.sh`). Not covered: forcing encryption for every table (`innodb_encrypt_tables=FORCE`) and encrypting InnoDB's temporary tables |
 | Key management and encryption plugins | The Vault plugin in depth: caching, timeouts, the token, and what happens when Vault fails. We did not use or compare the file key plugin or AWS KMS |
 | Binary log encryption | Not covered. The binary log is not enabled |
 | Aria encryption | Not covered |
@@ -366,6 +379,7 @@ The documentation page linked from the project area ([Data-at-rest encryption](h
 - **Dev-mode Vault loses its keys when the container stops.** After a reboot this cost us the whole encrypted database twice, and we had to rebuild it.
 - **The cost depends on the workload and the settings.** About 14% on the sysbench read/write mix (9 to 20% in our two full runs), and 93% with the default cache setting of this version. Our shop queries showed no measurable cost.
 - **Errors and logs are hard to read.** A missing key id gives errors that do not name the key, and the cause is only a note in the log.
+- **Encryption is opt-out with our settings.** With `innodb_encrypt_tables = ON`, a `CREATE TABLE ... ENCRYPTED=NO` succeeds and the table stays in plain text. Only `FORCE` prevents that, and we did not test it.
 - **It protects data at rest only.** The data files, the redo log and temporary files are covered. We did not test the binary log or backups, and anyone with SQL access still sees plain text.
 - **What we could not test:** other MariaDB versions, most results on other machines, real data, and long runs.
 
@@ -375,9 +389,9 @@ The documentation page linked from the project area ([Data-at-rest encryption](h
 - All results come from MariaDB 10.11.14 (the Ubuntu 24.04 package). According to the documentation, the Vault plugin's defaults changed in 10.11.15, 10.11.16 and 10.11.19 (version cache timeout, use of cached keys on timeout, wall-clock instead of CPU time for cache timers), so newer releases may behave differently. We did not test them.
 - The extra tests are single runs, except the crash (two runs).
 - Vault runs in dev mode with the token `root`, and the benchmark user has the password `sbtest`. Both are hardcoded.
-- The Docker image `hashicorp/vault` is not pinned to a version.
+- The Docker image is pinned to `hashicorp/vault:2.1.1`, the version we ran. Our container was started from the `latest` tag and reports Vault 2.1.1.
 - The binary log is not enabled, so binlog encryption is not covered.
 - We tested only on Ubuntu 24.04. The only automated check is `scripts/verify.sh`.
 - `scripts/run_all.sh` ran from start to finish once, on our laptop with the packages already installed (`results/claudia2/`, about 21 minutes). It has not been run on a machine that still had to install the packages.
 - The key rotation test was run three times with rotation and three times as a control, on one laptop, with a load made to use a lot of CPU time. Runs differ by up to about 10% in level, so a small cost of rotation could be hidden.
-- Memory use, table sizes before encryption and the read-only and write-only runs have not been measured yet: they were added to `run_all.sh` after our full run and will be in the next one.
+- Memory use, table sizes before encryption and the read-only and write-only runs have not been measured yet: they were added to `run_all.sh` after our full run and will be in the next one. The integrity check after encryption ran once, on its own (`results/claudia2/integrity_encrypted.txt`).

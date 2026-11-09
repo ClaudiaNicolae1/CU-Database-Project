@@ -11,6 +11,8 @@ POLL1=${POLL1:-120}
 POLL2=${POLL2:-300}
 STEP=${STEP:-5}
 CNF=${CNF:-/etc/mysql/mariadb.conf.d/60-encryption.cnf}
+cd "$(dirname "$0")/.." || exit 1
+[ -f $CNF ] || { echo "$CNF not found: run scripts/enable_encryption.sh first"; exit 1; }
 mkdir -p results/$WHO
 OUT=results/$WHO/vault_down_$MODE
 
