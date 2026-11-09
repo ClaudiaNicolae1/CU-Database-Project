@@ -1,8 +1,8 @@
 #!/bin/bash
 # usage: bash scripts/run_all.sh yourname
 # Runs every step of the project in order on a fresh Ubuntu 24.04 machine and stops at the first failure.
-# It takes about an hour: the data load alone takes 10 to 20 minutes, sysbench prepares 8 x 500,000 rows
-# and runs six timed minutes, and the encryption steps wait for InnoDB to finish.
+# It took about 21 minutes on our laptop with the packages already installed: about 9 minutes waiting for the
+# sbtest tables to be encrypted, six timed minutes of sysbench and 4 minutes of rotation. A clean machine adds the package install.
 # DRY_RUN=1 bash scripts/run_all.sh yourname   prints the steps without running them.
 # FORCE=1 bash scripts/run_all.sh yourname     skips the check for an already set up machine (the unencrypted numbers may then be wrong).
 NAME=${1:-$USER}
@@ -66,7 +66,7 @@ if [ -z "$DRY_RUN" ]; then
   trap 'pkill -P $KEEP 2>/dev/null; kill $KEEP 2>/dev/null' EXIT
 fi
 
-echo "started $(date), results go to results/$NAME/. This takes about an hour." | tee -a $LOG
+echo "started $(date), results go to results/$NAME/. This took about 21 minutes on our laptop with the packages installed; a clean machine adds the package install." | tee -a $LOG
 run "install packages, start Vault, create keys, load the data" bash scripts/setup.sh
 run "attacker view before encryption" bash scripts/attack_view.sh unencrypted $NAME
 run "shop queries before encryption" bash scripts/shop_bench.sh unencrypted $NAME

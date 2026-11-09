@@ -4,7 +4,7 @@
 
 ## Method
 
-`scripts/rotate_under_load.sh` writes a new version of key 2 to Vault twice, at 20 s and at 60 s into a 240 s run, while 6 workers keep querying the `shop` tables. Four workers run full-table scans on `orders` (they use a lot of server CPU time, which the plugin's cache timers count). Two workers read and update the three tables that use key 2. Every 5 s the script records the key versions MariaDB sees, how many tables are still rotating and how many pages were re-encrypted. A control run uses the same load and writes no key.
+`scripts/rotate_under_load.sh` writes a new version of key 2 to Vault twice, at 20 s and at 60 s into a 240 s run, while 6 workers keep querying the `shop` tables. Four workers run full-table scans on `orders` (they use a lot of server CPU time, which the plugin's cache timers count). Two workers read and update the three tables that use key 2. Every 5 s the script records the key versions MariaDB sees, how many tables are still rotating and how many pages were re-encrypted. A control run uses the same load and writes no key (`CONTROL=1 bash scripts/rotate_under_load.sh NAME`).
 
 We ran it three times with rotation and three times as a control, on one laptop:
 

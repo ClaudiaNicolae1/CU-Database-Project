@@ -49,7 +49,7 @@ sampler(){
 sampler &
 SPID=$!
 if [ $MODE = control ]; then
-  V2=9999 V3=9999 bash scripts/rotate_under_load.sh $NAME/probe/$TAG
+  CONTROL=1 bash scripts/rotate_under_load.sh $NAME/probe/$TAG
 else
   bash scripts/rotate_under_load.sh $NAME/probe/$TAG
 fi

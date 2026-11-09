@@ -1,10 +1,12 @@
-== encrypted: matches for email user1@example.com: 0
-== encrypted: matches for name Julia Becker: 0
-00028000: 0000 0001 0000 000a 0000 0009 0000 000b  ................
-00028010: 0000 0000 c02f a896 45bf 6873 6a5b f72a  ...../..E.hsj[.*
-00028020: d536 ae84 f4d5 b444 2419 5b1f 6006 42ab  .6.....D$.[.`.B.
-00028030: e4f2 00eb 34dc e46c 2fff a7e1 f6ab 36d9  ....4..l/.....6.
-00028040: de63 fe06 bc28 f8fc 2c93 7454 8f04 6fed  .c...(..,.tT..o.
-00028050: 8344 b8b0 b904 b5e5 9a2e de0a a64b 14b0  .D...........K..
-00028060: 2e4c 68f0 1dfa b5b5 3e73 8e28 f646 3057  .Lh.....>s.(.F0W
-00028070: 256f 8c85 daaf 20f2 db75 d020 2b28 461f  %o.... ..u. +(F.
+== encrypted: matches for email user1@example.com: 0  (the email belongs to user 1 only)
+== encrypted: matches for name Julia Becker: 0  (rows that share this name, because the generated names repeat)
+== encrypted: the bytes at the same place as the unencrypted run: offset 65683 
+== 128 bytes from offset 65635
+00010063: 58f1 c0f4 f6ca ea4e 15c4 0f0e 7b11 5be1  X......N....{.[.
+00010073: dc87 9fc9 3f3a 016d 8b9e 173d 22be 28c4  ....?:.m...=".(.
+00010083: 2421 b3f2 0cfd 5d00 2d1f 87e1 5280 51c6  $!....].-...R.Q.
+00010093: 5095 037c f255 eedf 9262 d3d2 e413 e92c  P..|.U...b.....,
+000100a3: 79f9 adcc 8f43 f04a d202 eaad 1c2a 71d1  y....C.J.....*q.
+000100b3: f0b3 420f 5d1b 6025 4871 f56f e3b9 3eb8  ..B.].`%Hq.o..>.
+000100c3: 974c 3947 cf75 76a4 faea f20f 6f22 c4c7  .L9G.uv.....o"..
+000100d3: 01b5 635d a9f9 2978 e2f1 9b63 6f82 2b55  ..c]..)x...co.+U
