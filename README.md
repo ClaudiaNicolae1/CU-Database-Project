@@ -81,7 +81,7 @@ Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault co
 
 ## Requirements and versions
 
-- Ubuntu 24.04 on a native install. Other systems are untested.
+- Ubuntu 24.04, on a native install (our laptop, x86) and in a fresh VM on an M1 Mac (arm64). Other systems are untested.
 - MariaDB 10.11.14 (Ubuntu package) with `mariadb-plugin-hashicorp-key-management`
 - HashiCorp Vault 2.1.1, run in Docker in dev mode (image `hashicorp/vault:2.1.1`)
 - sysbench 1.0.20, g++ (builds the data generator), binutils and xxd (attacker view)
@@ -285,7 +285,7 @@ Runs within one configuration differ by up to about 10%, and the first run of a 
 
 The repeat shows a cost of about 20% in throughput and 53% in p95 latency. The sample standard deviation over the three runs (`scripts/stats.sh`) is 50 tps (1.9%) unencrypted and 120 tps (5.6%) encrypted in the repeat, and 154 tps (5.8%) and 233 tps (9.6%) in the first series, so the encrypted runs vary about twice as much as the unencrypted ones, and the two encrypted means (2423 and 2142 tps) differ by more than their standard deviations. Over all six runs per configuration the cost is about 14% in throughput (2661 against 2283 tps) and 43% in p95 latency (4.73 against 6.76 ms). We would call the cost 10 to 20% in throughput on this machine. The shop queries gave 8.5 s unencrypted and 9.1 s encrypted in the repeat (one run each). Over all six single numbers we have, the averages are 8.54 s and 8.63 s (+1%), so we still see no clear cost on that workload.
 
-**Shop queries.** `scripts/shop_bench.sh` ran the five queries in `sql/workload.sql` with 4 clients, 3 iterations each, and we ran it twice per state. The average time to run all queries was 8.3 s and 8.8 s unencrypted, and 8.2 s and 8.6 s encrypted. The two runs of the same state differ by 4 to 6%, which is more than the 3% between the states, so we see no measurable cost of encryption on this workload. (The encrypted runs being slightly faster is noise, not a benefit.) The sysbench benchmark above did show a cost of about 14% over all our runs. The files hold the second run of each state (8.819 s and 8.566 s). The first runs are only in the terminal output. Files: `results/claudia/shop_unencrypted.txt` and `results/claudia/shop_encrypted.txt`. All shop timings in this README, including the comparison table, were measured with an earlier `sql/workload.sql` whose `UPDATE` targeted user 654321, which does not exist (the data has 200,000 users), so it changed no row. The current file updates user 65432. Runs with the current file are therefore not directly comparable to these numbers until the shop runs are repeated.
+**Shop queries.** `scripts/shop_bench.sh` ran the five queries in `sql/workload.sql` with 4 clients, 3 iterations each, and we ran it twice per state. The average time to run all queries was 8.3 s and 8.8 s unencrypted, and 8.2 s and 8.6 s encrypted. The two runs of the same state differ by 4 to 6%, which is more than the 3% between the states, so we see no measurable cost of encryption on this workload. (The encrypted runs being slightly faster is noise, not a benefit.) The sysbench benchmark above did show a cost of about 14% over all our runs. The files hold the second run of each state (8.819 s and 8.566 s). The first runs are only in the terminal output. Files: `results/claudia/shop_unencrypted.txt` and `results/claudia/shop_encrypted.txt`. All shop timings in this README, including the comparison table, were measured with an earlier `sql/workload.sql` whose `UPDATE` targeted user 654321, which does not exist (the data has 200,000 users), so it changed no row. The current file updates user 65432. Runs with the current file are therefore not directly comparable to these numbers until the shop runs are repeated. The `m1-vm` run is the first with the current file.
 
 What we found:
 
@@ -307,7 +307,7 @@ Step by step, with the commands and the result of each experiment: [docs/slowdow
 
 ## Results on different machines
 
-Numbers depend on the machine, so compare the relative change. A `-` means that file is missing. `scripts/compare.sh` builds the table from the files in `results/<name>/`. `claudia` and `claudia2` are the same laptop: the first series, and the repeat made by `run_all.sh`.
+Numbers depend on the machine, so compare the relative change. A `-` means that file is missing. `scripts/compare.sh` builds the table from the files in `results/<name>/`. `claudia` and `claudia2` are the same laptop: the first series, and the repeat made by `run_all.sh`. `m1-vm` is a fresh Ubuntu 24.04 VM on an M1 Mac (arm64, 4 virtual CPUs, 4 GB).
 
 <!-- compare:start -->
 | Person | tps unencrypted | tps encrypted | change | p95 ms unencrypted | p95 ms encrypted | change | shop s unencrypted | shop s encrypted | change |
@@ -316,8 +316,11 @@ Numbers depend on the machine, so compare the relative change. A `-` means that 
 | claudia2 | 2661 | 2142 | -20% | 4.71 | 7.21 | +53% | 8.469 | 9.066 | +7% |
 | Daris | - | - | - | - | - | - | - | - | - |
 | Francisco | - | - | - | - | - | - | - | - | - |
+| m1-vm | 619 | 606 | -2% | 23.42 | 24.39 | +4% | 7.907 | 8.097 | +2% |
 | Mercedes | - | 444 | - | - | 40.53 | - | - | 9.155 | - |
 <!-- compare:end -->
+
+**The clean-machine run (`m1-vm`).** A fresh Ubuntu 24.04 VM on an M1 Mac (arm64, Multipass, 4 virtual CPUs, 4 GB) ran `scripts/run_all.sh`, which had to install every package. Steps 1 to 15 passed on the first try and took 33 minutes. Most of it (about 18 minutes) was InnoDB encrypting the `sbtest` tables. On this VM, encryption cost 2% of sysbench throughput (619 ± 27 against 606 ± 9 transactions per second), 2.5% read-only and 5.2% write-only, and p95 latency rose by 2 to 4%. The MariaDB server used about 11% more CPU time per run (108 to 111 s unencrypted, 121 to 123 s encrypted), but it used fewer than 2 of the 4 cores, so CPU was not what limited throughput there. Our reading is that the extra encryption work went into idle CPU on the VM, while on the laptop it cost throughput, but we did not test that. The six `.ibd` files took exactly the same space before and after encryption (291,848,192 bytes). The VM found the same user 1 and the same counts as the laptop (email once, name 1,982 times, then 0 and 0), so the data generator gives the same data on arm64. The shop queries (7.91 s and 8.10 s) are the first ones measured with the current `sql/workload.sql`.
 
 ## Key rotation while serving traffic
 
@@ -341,7 +344,7 @@ Result: the email of user 1 is found once in the raw `users.ibd` file before enc
 - A new row written after encryption (a copy of user 1 with a unique marker in every text column) was not found in the raw `users.ibd` file after a flush.
 - A new table created without an `ENCRYPTED` option was encrypted with key 1 (`innodb_default_encryption_key_id`).
 - A new table created with `ENCRYPTED=NO` was accepted and stayed unencrypted (`encryption_scheme = 0`). With `innodb_encrypt_tables = ON`, anyone who can create tables can opt out of encryption. `innodb_encrypt_tables = FORCE` would refuse that. We did not test `FORCE`.
-- The six `.ibd` files take 291 MB on disk. The size before encryption has not been recorded yet, so we cannot say yet whether encryption changes it.
+- The six `.ibd` files take 291 MB on disk. On the clean-machine run (`m1-vm`), which ran the check in both states, the six files took exactly the same space before and after encryption (291,848,192 bytes). Single files changed by up to 4 MiB in both directions, because `encrypt_tables.sql` rebuilds each table.
 
 ## What happens when the key manager is unavailable
 
@@ -390,6 +393,6 @@ The documentation page linked from the project area ([Data-at-rest encryption](h
 - The Docker image is pinned to `hashicorp/vault:2.1.1`, the version we ran. Our container was started from the `latest` tag and reports Vault 2.1.1.
 - The binary log is not enabled, so binlog encryption is not covered.
 - We tested only on Ubuntu 24.04. The only automated check is `scripts/verify.sh`.
-- `scripts/run_all.sh` ran from start to finish once, on our laptop with the packages already installed (`results/claudia2/`, about 21 minutes). It has not been run on a machine that still had to install the packages.
+- `scripts/run_all.sh` ran from start to finish once, on our laptop with the packages already installed (`results/claudia2/`, about 21 minutes). It also ran on a fresh Ubuntu 24.04 VM on an M1 Mac (arm64, 4 virtual CPUs, 4 GB, `results/m1-vm/`), run by a student outside our team, which had to install every package: steps 1 to 15 passed on the first try in 33 minutes.
 - The key rotation test was run three times with rotation and three times as a control, on one laptop, with a load made to use a lot of CPU time. Runs differ by up to about 10% in level, so a small cost of rotation could be hidden.
 - Memory use, table sizes before encryption and the read-only and write-only runs have not been measured yet: they were added to `run_all.sh` after our full run and will be in the next one. The integrity check after encryption ran once, on its own (`results/claudia2/integrity_encrypted.txt`).

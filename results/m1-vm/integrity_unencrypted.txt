@@ -1,0 +1,37 @@
+== integrity check, unencrypted, Tue Nov 10 22:55:32 EET 2026
+== CHECK TABLE (expect status OK for all six)
+users: OK
+addresses: OK
+payment_methods: OK
+products: OK
+orders: OK
+order_items: OK
+== row counts
+users: 200000
+addresses: 260095
+payment_methods: 200000
+products: 5000
+orders: 1000000
+order_items: 2501190
+== foreign key orphans (expect 0 everywhere)
+addresses.user_id without a parent in users: 0
+payment_methods.user_id without a parent in users: 0
+orders.user_id without a parent in users: 0
+order_items.order_id without a parent in orders: 0
+order_items.product_id without a parent in products: 0
+== encryption state of the six tables (scheme, key id, min and current key version)
+shop/addresses	0	1	0	0
+shop/orders	0	1	0	0
+shop/order_items	0	1	0	0
+shop/payment_methods	0	1	0	0
+shop/products	0	1	0	0
+shop/users	0	1	0	0
+== sizes: data+index bytes from information_schema, and the .ibd file size on disk
+users: data+index=20496384 file=28311552
+addresses: data+index=23101440 file=27262976
+payment_methods: data+index=22052864 file=26214400
+products: data+index=278528 file=344064
+orders: data+index=66158592 file=71303168
+order_items: data+index=134430720 file=138412032
+total shop/*.ibd on disk: 291848192 bytes
+== RESULT: all checks passed

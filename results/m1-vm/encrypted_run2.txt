@@ -1,0 +1,44 @@
+sysbench 1.0.20 (using system LuaJIT 2.1.0-beta3)
+
+Running the test with following options:
+Number of threads: 8
+Report intermediate results every 10 second(s)
+Initializing random number generator from current time
+
+
+Initializing worker threads...
+
+Threads started!
+
+[ 10s ] thds: 8 tps: 594.25 qps: 11893.00 (r/w/o: 8326.57/2377.12/1189.31) lat (ms,95%): 24.38 err/s: 0.00 reconn/s: 0.00
+[ 20s ] thds: 8 tps: 603.19 qps: 12064.09 (r/w/o: 8445.05/2412.76/1206.28) lat (ms,95%): 24.38 err/s: 0.00 reconn/s: 0.00
+[ 30s ] thds: 8 tps: 602.42 qps: 12047.64 (r/w/o: 8432.74/2409.97/1204.93) lat (ms,95%): 24.83 err/s: 0.00 reconn/s: 0.00
+[ 40s ] thds: 8 tps: 613.58 qps: 12272.50 (r/w/o: 8590.82/2454.52/1227.16) lat (ms,95%): 23.95 err/s: 0.00 reconn/s: 0.00
+[ 50s ] thds: 8 tps: 614.07 qps: 12284.14 (r/w/o: 8599.44/2456.57/1228.13) lat (ms,95%): 23.95 err/s: 0.00 reconn/s: 0.00
+[ 60s ] thds: 8 tps: 616.96 qps: 12333.55 (r/w/o: 8632.60/2467.23/1233.71) lat (ms,95%): 23.95 err/s: 0.00 reconn/s: 0.00
+SQL statistics:
+    queries performed:
+        read:                            510328
+        write:                           145808
+        other:                           72904
+        total:                           729040
+    transactions:                        36452  (607.40 per sec.)
+    queries:                             729040 (12147.97 per sec.)
+    ignored errors:                      0      (0.00 per sec.)
+    reconnects:                          0      (0.00 per sec.)
+
+General statistics:
+    total time:                          60.0129s
+    total number of events:              36452
+
+Latency (ms):
+         min:                                    2.04
+         avg:                                   13.17
+         max:                                   72.52
+         95th percentile:                       24.38
+         sum:                               479990.83
+
+Threads fairness:
+    events (avg/stddev):           4556.5000/43.79
+    execution time (avg/stddev):   59.9989/0.00
+

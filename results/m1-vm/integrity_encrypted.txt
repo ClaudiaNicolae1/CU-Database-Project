@@ -1,0 +1,45 @@
+== integrity check, encrypted, Tue Nov 10 23:02:33 EET 2026
+== CHECK TABLE (expect status OK for all six)
+users: OK
+addresses: OK
+payment_methods: OK
+products: OK
+orders: OK
+order_items: OK
+== row counts
+users: 200000
+addresses: 260095
+payment_methods: 200000
+products: 5000
+orders: 1000000
+order_items: 2501190
+== foreign key orphans (expect 0 everywhere)
+addresses.user_id without a parent in users: 0
+payment_methods.user_id without a parent in users: 0
+orders.user_id without a parent in users: 0
+order_items.order_id without a parent in orders: 0
+order_items.product_id without a parent in products: 0
+== encryption state of the six tables (scheme, key id, min and current key version)
+shop/addresses	1	2	1	1
+shop/orders	1	1	1	1
+shop/order_items	1	1	1	1
+shop/payment_methods	1	2	1	1
+shop/products	1	1	1	1
+shop/users	1	2	1	1
+== sizes: data+index bytes from information_schema, and the .ibd file size on disk
+users: data+index=23642112 file=24117248
+addresses: data+index=26279936 file=27262976
+payment_methods: data+index=25231360 file=26214400
+products: data+index=278528 file=344064
+orders: data+index=70336512 file=71303168
+order_items: data+index=138625024 file=142606336
+total shop/*.ibd on disk: 291848192 bytes
+== new row: insert a copy of user 1 as user 900000001, with the unique text ic3572c8 in every string column that is long enough, flush, and search the raw file (expect 0)
+matches of the new text in users.ibd: 0
+== new table without an ENCRYPTED option (expect encryption_scheme 1 and the default key id)
+t_default_test: scheme and key id = 1 1
+innodb_default_encryption_key_id = 1
+== new table with ENCRYPTED=NO while innodb_encrypt_tables=ON (allowed unless FORCE; shows whether a table can opt out)
+CREATE ... ENCRYPTED=NO: created
+t_plain_test: encryption_scheme = 0
+== RESULT: all checks passed

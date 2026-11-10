@@ -1,0 +1,15 @@
+== unencrypted: matches for email user1@example.com: 1  (the email belongs to user 1 only)
+== unencrypted: matches for name Julia Becker: 1982  (rows that share this name, because the generated names repeat)
+== reference offset (bytes): 65683 (page 4, 147 bytes into the page)
+Julia Beckeruser1@example.com+49 213994432
+David Wagneruser2@example.com+49 992310487
+Julia Richteruser3@example.com+49 372740723
+== 128 bytes from offset 65635
+00010063: 696e 6669 6d75 6d00 0200 0b00 0073 7570  infimum......sup
+00010073: 7265 6d75 6d0a 0d11 0c00 0000 1000 5780  remum.........W.
+00010083: 0000 0100 0000 0000 0080 0000 0000 0000  ................
+00010093: 4a75 6c69 6120 4265 636b 6572 7573 6572  Julia Beckeruser
+000100a3: 3140 6578 616d 706c 652e 636f 6d2b 3439  1@example.com+49
+000100b3: 2032 3133 3939 3434 3332 8f76 c831 3535   213994432.v.155
+000100c3: 3032 3930 3331 3399 b44a 0000 0a0d 110c  0290313..J......
+000100d3: 0000 0018 0057 8000 0002 0000 0000 0000  .....W..........

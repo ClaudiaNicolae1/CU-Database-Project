@@ -1,0 +1,3 @@
+run1 before: rss_mb=267 cpu_s=159 | after: rss_mb=282 cpu_s=282 | server cpu used in the run: 123 s | memavailable_mb=3201
+run2 before: rss_mb=282 cpu_s=282 | after: rss_mb=286 cpu_s=403 | server cpu used in the run: 121 s | memavailable_mb=3185
+run3 before: rss_mb=286 cpu_s=403 | after: rss_mb=287 cpu_s=525 | server cpu used in the run: 122 s | memavailable_mb=3184
