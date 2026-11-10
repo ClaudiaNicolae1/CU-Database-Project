@@ -216,9 +216,7 @@ PRODUCTS "1" --> "0..*" ORDER_ITEMS : included in
 - **1** – Exactly one
 - **0..*** – Zero or many
 - **1..*** – One or many
-- **1:1** – One-to-One relationship
 - **1:N** – One-to-Many relationship
-- **M:N** – Many-to-Many relationship
 - **Class (Rectangle)** – Represents a database table.
 - **Connecting Line** – Represents a relationship between tables.
 
@@ -254,7 +252,7 @@ encrypt_tmp_files = ON
 - sysbench `oltp_read_write` on 8 tables with 500,000 rows each (`sbtest`), 8 threads, 60 s per run, 3 runs per configuration (`scripts/bench.sh`).
 - Encrypted runs start only after all eight tables show `encryption_scheme = 1` and `rotating_or_flushing = 0`. `bench.sh` waits for this.
 - Metrics: transactions per second and latency (average and 95th percentile) from sysbench. We list every run so the spread is visible.
-- `scripts/shop_bench.sh` times five queries on the `shop` tables with `mariadb-slap` (`sql/workload.sql`): a point lookup, a join, an update and two full-table aggregations. Four clients run the set three times. We ran it twice per state and kept the second run.
+- `scripts/shop_bench.sh` times five queries on the `shop` tables with `mariadb-slap` (`sql/workload.sql`): a point lookup, a join, an update and two full-table aggregations (in the measured runs the update matched no row; see "Shop queries"). Four clients run the set three times. We ran it twice per state and kept the second run.
 
 ## Findings: one Vault plugin setting caused a ~15x slowdown
 
@@ -287,7 +285,7 @@ Runs within one configuration differ by up to about 10%, and the first run of a 
 
 The repeat shows a cost of about 20% in throughput and 53% in p95 latency. The sample standard deviation over the three runs (`scripts/stats.sh`) is 50 tps (1.9%) unencrypted and 120 tps (5.6%) encrypted in the repeat, and 154 tps (5.8%) and 233 tps (9.6%) in the first series, so the encrypted runs vary about twice as much as the unencrypted ones, and the two encrypted means (2423 and 2142 tps) differ by more than their standard deviations. Over all six runs per configuration the cost is about 14% in throughput (2661 against 2283 tps) and 43% in p95 latency (4.73 against 6.76 ms). We would call the cost 10 to 20% in throughput on this machine. The shop queries gave 8.5 s unencrypted and 9.1 s encrypted in the repeat (one run each). Over all six single numbers we have, the averages are 8.54 s and 8.63 s (+1%), so we still see no clear cost on that workload.
 
-**Shop queries.** `scripts/shop_bench.sh` ran the five queries in `sql/workload.sql` with 4 clients, 3 iterations each, and we ran it twice per state. The average time to run all queries was 8.3 s and 8.8 s unencrypted, and 8.2 s and 8.6 s encrypted. The two runs of the same state differ by 4 to 6%, which is more than the 3% between the states, so we see no measurable cost of encryption on this workload. (The encrypted runs being slightly faster is noise, not a benefit.) The sysbench benchmark above did show a cost of about 14% over all our runs. The files hold the second run of each state (8.819 s and 8.566 s). The first runs are only in the terminal output. Files: `results/claudia/shop_unencrypted.txt` and `results/claudia/shop_encrypted.txt`.
+**Shop queries.** `scripts/shop_bench.sh` ran the five queries in `sql/workload.sql` with 4 clients, 3 iterations each, and we ran it twice per state. The average time to run all queries was 8.3 s and 8.8 s unencrypted, and 8.2 s and 8.6 s encrypted. The two runs of the same state differ by 4 to 6%, which is more than the 3% between the states, so we see no measurable cost of encryption on this workload. (The encrypted runs being slightly faster is noise, not a benefit.) The sysbench benchmark above did show a cost of about 14% over all our runs. The files hold the second run of each state (8.819 s and 8.566 s). The first runs are only in the terminal output. Files: `results/claudia/shop_unencrypted.txt` and `results/claudia/shop_encrypted.txt`. All shop timings in this README, including the comparison table, were measured with an earlier `sql/workload.sql` whose `UPDATE` targeted user 654321, which does not exist (the data has 200,000 users), so it changed no row. The current file updates user 65432. Runs with the current file are therefore not directly comparable to these numbers until the shop runs are repeated.
 
 What we found:
 
@@ -376,7 +374,7 @@ The documentation page linked from the project area ([Data-at-rest encryption](h
 
 - **The database now depends on the key manager.** MariaDB did not start without Vault, and a running server crashed in both runs once its cached key information had expired while Vault was unreachable. A key file on the same disk has neither problem, but it keeps the key next to the data. We did not test that plugin, so we cannot say how much of the cost and fragility comes from Vault itself.
 - **Here, the key manager does not protect the key from someone on the machine.** Vault runs on the same host in dev mode, MariaDB reads the root token from its config file, and the keys sit in memory. Anyone with root on the host gets both the data files and the key. A real deployment would put Vault on another machine, with a limited token and persistent storage. We did not test that.
-- **Dev-mode Vault loses its keys when the container stops.** After a reboot this cost us the whole encrypted database twice, and we had to rebuild it.
+- **Dev-mode Vault loses its keys when the container stops.** After reboots this cost us the whole encrypted database three times, and each time we had to rebuild it.
 - **The cost depends on the workload and the settings.** About 14% on the sysbench read/write mix (9 to 20% in our two full runs), and 93% with the default cache setting of this version. Our shop queries showed no measurable cost.
 - **Errors and logs are hard to read.** A missing key id gives errors that do not name the key, and the cause is only a note in the log.
 - **Encryption is opt-out with our settings.** With `innodb_encrypt_tables = ON`, a `CREATE TABLE ... ENCRYPTED=NO` succeeds and the table stays in plain text. Only `FORCE` prevents that, and we did not test it.
