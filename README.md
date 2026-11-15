@@ -75,7 +75,7 @@ Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault co
 
 ## What is in the repo
 
-- `scripts/`: setup, attacker view, benchmarks, key rotation, checks (`verify.sh`), and `stats.sh` (mean and standard deviation of the sysbench runs)
+- `scripts/`: setup, encryption configuration, attacker-view and leakage experiments, database population, benchmark execution, automated comparison, key-rotation tests under load, validation checks (verify.sh), and statistical analysis (stats.sh).
 - `scripts/extra/`: tests beyond what the project asks: Vault outages, the rotation probe, the integrity check and the read-only and write-only sysbench runs
 - `sql/`: schema of the test database (`shop`), the statements that encrypt it, and the query workload (`workload.sql` has no `USE` statement, so run it with the `shop` database selected, as `shop_bench.sh` does)
 - `results/<name>/`: outputs, one folder per person. The `extra/` folder inside holds the outputs of the extra tests, and `experiments/` the outputs of the diagnosis.
@@ -249,7 +249,7 @@ encrypt_tmp_files = ON
 
 ## Binary log and Aria
 
-InnoDB encryption only covers InnoDB files. The binary log and Aria tables are separate files with their own settings. Without them, the text of the statements that change data is readable in the binary log.
+InnoDB encryption only covers InnoDB files. The binary log and Aria tables are separate files with their own settings.Without them, the text of a statement that changes an encrypted InnoDB table is still readable in the binary log (`scripts/binlog_leak_test.sh`).
 
 `scripts/enable_binlog_aria.sh plain|encrypted` writes `70-binlog-aria.cnf`. It is separate from `enable_encryption.sh` so the unencrypted baseline of the other measurements has no binary log. `scripts/attack_binlog_aria.sh` searches the raw files for marker strings that were written to the database.
 
