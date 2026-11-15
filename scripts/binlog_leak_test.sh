@@ -3,10 +3,12 @@
 # Shows that the binary log keeps a statement in plain text even when the
 # table it changes is encrypted, and that encrypt_binlog closes this.
 set -e
+cd "$(dirname "$0")/.." || exit 1
+WHO=${1:-$USER}
 sudo -v
 DATADIR=$(sudo mariadb -N -e "SELECT @@datadir;")
-mkdir -p results/Mercedes
-OUT=results/Mercedes/binlog_leak_test.txt
+mkdir -p results/$WHO
+OUT=results/$WHO/binlog_leak_test.txt
 TAG=MARCA-$(date +%s)   # a new marker each run, so old logs do not confuse the result
 
 look() {   # look <label> <file> <text>
