@@ -249,7 +249,7 @@ encrypt_tmp_files = ON
 
 ## Binary log and Aria
 
-InnoDB encryption only covers InnoDB files. The binary log and Aria tables are separate files with their own settings. Without them, the text of a statement that changes an encrypted table is readable in the binary log.
+InnoDB encryption only covers InnoDB files. The binary log and Aria tables are separate files with their own settings. Without them, the text of the statements that change data is readable in the binary log.
 
 `scripts/enable_binlog_aria.sh plain|encrypted` writes `70-binlog-aria.cnf`. It is separate from `enable_encryption.sh` so the unencrypted baseline of the other measurements has no binary log. `scripts/attack_binlog_aria.sh` searches the raw files for marker strings that were written to the database.
 
