@@ -13,6 +13,8 @@ innodb_encryption_threads = 4
 encrypt_tmp_files = ON
 aria_encrypt_tables = ON
 encrypt_tmp_disk_tables = ON
+log_bin = mariadb-bin
+encrypt_binlog = ON
 CNF
 sudo systemctl restart mariadb
 echo "Encryption enabled. Check progress with INNODB_TABLESPACES_ENCRYPTION."
