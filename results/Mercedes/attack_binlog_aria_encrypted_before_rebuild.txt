@@ -1,0 +1,13 @@
+### mode: encrypted   datadir: /var/lib/mariadb/
+== /var/lib/mariadb/aria_log.00000001
+MARKER-ARIA-1
+MARKER-ARIA-2
+== /var/lib/mariadb/mariadb-bin.000001
+UPDATE shop.users SET phone='MARKER-BINLOG-1' WHERE user_id=1
+INSERT INTO shop.aria_test VALUES (1,'MARKER-ARIA-1')fj0
+== /var/lib/mariadb/mariadb-bin.000002
+   (not found)
+== /var/lib/mariadb/shop/aria_test.MAD
+MARKER-ARIA-1
+== /var/lib/mariadb/shop/aria_test2.MAD
+   (not found)

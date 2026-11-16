@@ -1,0 +1,10 @@
+### marker: MARKER-1794787538   datadir: /var/lib/mariadb/
+shop/users	1	2
+-- table file (encrypted table)
+   (not found)
+-- binary log NOT encrypted
+UPDATE shop.users SET phone='MARKER-1794787538-PLAIN' WHERE user_id=1
+-- table file (encrypted table)
+   (not found)
+-- binary log encrypted
+   (not found)
