@@ -9,11 +9,11 @@ sudo -v
 DATADIR=$(sudo mariadb -N -e "SELECT @@datadir;")
 mkdir -p results/$WHO
 OUT=results/$WHO/binlog_leak_test.txt
-TAG=MARCA-$(date +%s)   # a new marker each run, so old logs do not confuse the result
+TAG=MARKER-$(date +%s)   # a new marker each run, so old logs do not confuse the result
 
 look() {   # look <label> <file> <text>
   echo "-- $1"
-  sudo sh -c "strings $2 | grep $3" || echo "   (no aparece)"
+  sudo sh -c "strings $2 | grep $3" || echo "   (not found)"
 }
 
 {

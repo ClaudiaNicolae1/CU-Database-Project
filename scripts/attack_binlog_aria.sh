@@ -1,6 +1,6 @@
 #!/bin/bash
 # Usage: bash scripts/attack_binlog_aria.sh plain|encrypted
-# Looks for the text "MARCA" in the raw files a thief could copy.
+# Looks for the text "MARKER" in the raw files a thief could copy.
 cd "$(dirname "$0")/.." || exit 1
 MODE=${1:?usage: $0 plain|encrypted yourname}
 WHO=${2:-$USER}
@@ -16,6 +16,6 @@ OUT=results/$WHO/attack_binlog_aria_$MODE.txt
     -not -name '*.idx' | sort |
   while read -r f; do
     echo "== $f"
-    sudo strings "$f" | grep MARCA || echo "   (no aparece)"
+    sudo strings "$f" | grep MARKER || echo "   (not found)"
   done
 } | tee "$OUT"

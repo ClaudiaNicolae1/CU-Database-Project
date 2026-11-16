@@ -1,10 +1,10 @@
 ### mode: encrypted   datadir: /var/lib/mariadb/
 == /var/lib/mariadb/aria_log.00000001
-MARCA-ARIA-1
-MARCA-ARIA-2
-== /var/lib/mariadb/mariadb-bin.000003
-   (no aparece)
+MARKER-ARIA-1
+MARKER-ARIA-2
+== /var/lib/mariadb/mariadb-bin.000002
+   (not found)
 == /var/lib/mariadb/shop/aria_test.MAD
-   (no aparece)
+   (not found)
 == /var/lib/mariadb/shop/aria_test2.MAD
-   (no aparece)
+   (not found)
