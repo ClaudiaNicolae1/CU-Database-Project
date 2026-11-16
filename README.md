@@ -75,7 +75,7 @@ Dev-mode Vault keeps its keys in memory, so do not reboot or remove the Vault co
 
 ## What is in the repo
 
-- `scripts/`: setup, encryption configuration, attacker-view and leakage experiments, database population, benchmark execution, automated comparison, key-rotation tests under load, validation checks (verify.sh), and statistical analysis (stats.sh).
+- `scripts/`: setup, attacker view, benchmarks, key rotation, checks (`verify.sh`), `stats.sh` (mean and standard deviation of the sysbench runs), and the binary log and Aria tests (`enable_binlog_aria.sh`, `attack_binlog_aria.sh`, `binlog_leak_test.sh`)
 - `scripts/extra/`: tests beyond what the project asks: Vault outages, the rotation probe, the integrity check and the read-only and write-only sysbench runs
 - `sql/`: schema of the test database (`shop`), the statements that encrypt it, and the query workload (`workload.sql` has no `USE` statement, so run it with the `shop` database selected, as `shop_bench.sh` does)
 - `results/<name>/`: outputs, one folder per person. The `extra/` folder inside holds the outputs of the extra tests, and `experiments/` the outputs of the diagnosis.
@@ -261,7 +261,9 @@ InnoDB encryption only covers InnoDB files. The binary log and Aria tables are s
 | New Aria table | marker not found |
 | `aria_log` | marker found, also for tables that are encrypted |
 
-Keep personal data in InnoDB tables: their redo log is encrypted, the Aria log is not.
+Keep personal data in InnoDB tables: the Aria log stays readable. We did not inspect InnoDB's redo log in this test.
+
+These tests leave the binary log on. Run them after the benchmarks, or undo them with `sudo rm /etc/mysql/mariadb.conf.d/70-binlog-aria.cnf && sudo systemctl restart mariadb`.
 
 ## Method of the measurements
 
@@ -408,7 +410,7 @@ The documentation page linked from the project area ([Data-at-rest encryption](h
 - The extra tests are single runs, except the crash (two runs).
 - Vault runs in dev mode with the token `root`, and the benchmark user has the password `sbtest`. Both are hardcoded.
 - The Docker image is pinned to `hashicorp/vault:2.1.1`, the version we ran. Our container was started from the `latest` tag and reports Vault 2.1.1.
--Binary log and Aria were tested only with marker strings on a small test table, not under load. We did not test `encrypt_tmp_disk_tables`, key rotation or a Vault outage with the binary log on, or the throughput cost of the binary log.
+- Binary log and Aria were tested only with marker strings on a small test table, not under load. We did not test `encrypt_tmp_disk_tables`, key rotation or a Vault outage with the binary log on, or the throughput cost of the binary log.
 - We tested only on Ubuntu 24.04. The only automated check is `scripts/verify.sh`.
 - `scripts/run_all.sh` ran from start to finish once, on our laptop with the packages already installed (`results/claudia2/`, about 21 minutes). It also ran on a fresh Ubuntu 24.04 VM on an M1 Mac (arm64, 4 virtual CPUs, 4 GB, `results/m1-vm/`), run by a student outside our team, which had to install every package: steps 1 to 15 passed on the first try in 33 minutes.
 - The key rotation test was run three times with rotation and three times as a control, on one laptop, with a load made to use a lot of CPU time. Runs differ by up to about 10% in level, so a small cost of rotation could be hidden.

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Usage: bash scripts/attack_binlog_aria.sh plain|encrypted
+# Usage: bash scripts/attack_binlog_aria.sh plain|encrypted yourname
 # Looks for the text "MARKER" in the raw files a thief could copy.
 cd "$(dirname "$0")/.." || exit 1
 MODE=${1:?usage: $0 plain|encrypted yourname}

@@ -1,5 +1,5 @@
 #!/bin/bash
-# Usage: bash scripts/binlog_leak_test.sh
+# Usage: bash scripts/binlog_leak_test.sh (yourname)
 # Shows that the binary log keeps a statement in plain text even when the
 # table it changes is encrypted, and that encrypt_binlog closes this.
 set -e
