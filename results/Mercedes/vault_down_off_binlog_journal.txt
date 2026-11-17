@@ -1,0 +1,30 @@
+Nov 17 20:20:00 stonepc898 mariadbd[90831]: 2026-11-17 20:20:00 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15003 milliseconds with 0 bytes received
+Nov 17 20:20:00 stonepc898 mariadbd[90831]: 2026-11-17 20:20:00 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Nov 17 20:20:00 stonepc898 mariadbd[90831]: 2026-11-17 20:20:00 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15003 milliseconds with 0 bytes received
+Nov 17 20:20:00 stonepc898 mariadbd[90831]: 2026-11-17 20:20:00 0 [ERROR] mariadbd: hashicorp: Unable to get key data
+Nov 17 20:20:02 stonepc898 mariadbd[90831]: InnoDB: Failing assertion: key_version != ENCRYPTION_KEY_VERSION_INVALID
+Nov 17 20:20:02 stonepc898 mariadbd[90831]: 261117 20:20:02 [ERROR] /usr/sbin/mariadbd got signal 6 ;
+Nov 17 20:20:07 stonepc898 mariadbd[105179]: 2026-11-17 20:20:07 0 [Warning] --hashicorp-key-management-use-cache-on-timeout is deprecated and will be removed in a future release
+Nov 17 20:21:07 stonepc898 mariadbd[105179]: 2026-11-17 20:21:07 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15001 milliseconds with 0 bytes received
+Nov 17 20:21:07 stonepc898 mariadbd[105179]: 2026-11-17 20:21:07 0 [ERROR] mariadbd: hashicorp: Unable to get storage options for "http://127.0.0.1:8200/v1/sys/mounts/mariadb/tune"
+Nov 17 20:21:07 stonepc898 mariadbd[105179]: 2026-11-17 20:21:07 0 [ERROR] Plugin 'hashicorp_key_management' init function returned error.
+Nov 17 20:21:07 stonepc898 mariadbd[105179]: 2026-11-17 20:21:07 0 [ERROR] Plugin 'hashicorp_key_management' registration as a ENCRYPTION failed.
+Nov 17 20:21:07 stonepc898 mariadbd[105179]: 2026-11-17 20:21:07 0 [ERROR] InnoDB: cannot enable encryption, encryption plugin is not available
+Nov 17 20:21:07 stonepc898 mariadbd[105179]: 2026-11-17 20:21:07 0 [ERROR] Plugin 'InnoDB' registration as a STORAGE ENGINE failed.
+Nov 17 20:21:07 stonepc898 mariadbd[105179]: 2026-11-17 20:21:07 0 [ERROR] Failed to enable encryption of temporary files
+Nov 17 20:21:07 stonepc898 mariadbd[105179]: 2026-11-17 20:21:07 0 [ERROR] Aborting
+Nov 17 20:22:26 stonepc898 mariadbd[149872]: 2026-11-17 20:22:26 0 [Warning] --hashicorp-key-management-use-cache-on-timeout is deprecated and will be removed in a future release
+Nov 17 20:23:26 stonepc898 mariadbd[149872]: 2026-11-17 20:23:26 0 [ERROR] mariadbd: hashicorp: curl returned this error code: 28 with the following error message: Operation timed out after 15002 milliseconds with 0 bytes received
+Nov 17 20:23:26 stonepc898 mariadbd[149872]: 2026-11-17 20:23:26 0 [ERROR] mariadbd: hashicorp: Unable to get storage options for "http://127.0.0.1:8200/v1/sys/mounts/mariadb/tune"
+Nov 17 20:23:26 stonepc898 mariadbd[149872]: 2026-11-17 20:23:26 0 [ERROR] Plugin 'hashicorp_key_management' init function returned error.
+Nov 17 20:23:26 stonepc898 mariadbd[149872]: 2026-11-17 20:23:26 0 [ERROR] Plugin 'hashicorp_key_management' registration as a ENCRYPTION failed.
+Nov 17 20:23:26 stonepc898 mariadbd[149872]: 2026-11-17 20:23:26 0 [ERROR] InnoDB: cannot enable encryption, encryption plugin is not available
+Nov 17 20:23:26 stonepc898 mariadbd[149872]: 2026-11-17 20:23:26 0 [ERROR] Plugin 'InnoDB' registration as a STORAGE ENGINE failed.
+Nov 17 20:23:26 stonepc898 mariadbd[149872]: 2026-11-17 20:23:26 0 [ERROR] Failed to enable encryption of temporary files
+Nov 17 20:23:26 stonepc898 mariadbd[149872]: 2026-11-17 20:23:26 0 [ERROR] Aborting
+Nov 17 20:29:36 stonepc898 mariadbd[150632]: 2026-11-17 20:29:36 0 [Warning] --hashicorp-key-management-use-cache-on-timeout is deprecated and will be removed in a future release
+Nov 17 20:29:36 stonepc898 mariadbd[150632]: 2026-11-17 20:29:36 0 [Note] InnoDB: Creating #1 encryption thread id 123756630488768 total threads 4.
+Nov 17 20:29:36 stonepc898 mariadbd[150632]: 2026-11-17 20:29:36 0 [Note] InnoDB: Creating #2 encryption thread id 123756622096064 total threads 4.
+Nov 17 20:29:36 stonepc898 mariadbd[150632]: 2026-11-17 20:29:36 0 [Note] InnoDB: Creating #3 encryption thread id 123756613703360 total threads 4.
+Nov 17 20:29:36 stonepc898 mariadbd[150632]: 2026-11-17 20:29:36 0 [Note] InnoDB: Creating #4 encryption thread id 123755925862080 total threads 4.
+Nov 17 20:29:36 stonepc898 mariadbd[150632]: 2026-11-17 20:29:36 0 [Note] Using encryption key id 2 for temporary files

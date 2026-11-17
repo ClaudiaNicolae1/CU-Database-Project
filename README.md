@@ -263,6 +263,17 @@ InnoDB encryption only covers InnoDB files. The binary log and Aria tables are s
 
 Keep personal data in InnoDB tables: the Aria log stays readable. We did not inspect InnoDB's redo log in this test.
 
+### Follow-up tests with binary log and temporary disk tables (`results/Mercedes/`)
+
+We ran four additional checks on Ubuntu (WSL2, MariaDB 11.8.6) covering temporary disk tables and binary log behavior under rotation, Vault outages, and load:
+
+| Test | Script and result files | Outcome |
+|---|---|---|
+| Internal temp disk tables (`encrypt_tmp_disk_tables`) | `scripts/tmp_disk_test.sh`, `results/Mercedes/tmp_disk_test.txt` | Forcing an on-disk Aria temporary table via `GROUP BY` (`max_heap_table_size=16K`, `tmp_table_size=16K`) leaked plain-text markers in `/proc/$PID/root/tmp/#sql-temptable-*.MAD` when `encrypt_tmp_disk_tables=0`, and had **0 matches** when `encrypt_tmp_disk_tables=1` |
+| Key rotation with `encrypt_binlog=ON` | `scripts/binlog_rotation_test.sh`, `scripts/rotate_under_load.sh`, `results/Mercedes/binlog_rotation_test.txt`, `results/Mercedes/rotation_binlog_*.txt` | Rotating key `2` switched binary logs (`mariadb-bin.000003` to `000004`); `strings` on the raw files found **0 plain-text markers** while `SHOW BINLOG EVENTS` decoded all events across rotations with **0 errors** across 4,437 scan rounds and 4,128 point rounds |
+| Vault outage with `encrypt_binlog=ON` | `scripts/vault_down.sh`, `results/Mercedes/vault_down_off_binlog_*.txt` | With `use-cache-on-timeout=off`, pausing Vault behaved the same as without binary logging: queries ran until the 60 s version cache expired, stalled (~60 s), and then failed 100%; restarting MariaDB while Vault was unreachable failed after 62 s and recovered once Vault resumed and the service restarted |
+| Throughput cost of `encrypt_binlog=ON` | `results/Mercedes/encrypted_binlog_run*.txt`, `results/Mercedes/shop_encrypted_binlog.txt` | On the same machine, enabling `encrypt_binlog=ON` vs. encrypted InnoDB without binary logging changed `sysbench` throughput from `1,209` to `1,163` tps (**-3.8%**), p95 latency from `10.66` to `11.46` ms (**+7.5%**), and `shop` time from `4.183` to `4.313` s (**+3.1%**) |
+
 These tests leave the binary log on. Run them after the benchmarks, or undo them with `sudo rm /etc/mysql/mariadb.conf.d/70-binlog-aria.cnf && sudo systemctl restart mariadb`.
 
 ## Method of the measurements
@@ -336,7 +347,7 @@ Numbers depend on the machine, so compare the relative change. A `-` means that 
 | Daris | - | - | - | - | - | - | - | - | - |
 | Francisco | - | - | - | - | - | - | - | - | - |
 | m1-vm | 619 | 606 | -2% | 23.42 | 24.39 | +4% | 7.907 | 8.097 | +2% |
-| Mercedes | - | 444 | - | - | 40.53 | - | - | 9.155 | - |
+| Mercedes | - | 1209 | - | - | 10.66 | - | - | 4.183 | - |
 <!-- compare:end -->
 
 **The clean-machine run (`m1-vm`).** A fresh Ubuntu 24.04 VM on an M1 Mac (arm64, Multipass, 4 virtual CPUs, 4 GB) ran `scripts/run_all.sh`, which had to install every package. Steps 1 to 15 passed on the first try and took 33 minutes. Most of it (about 18 minutes) was InnoDB encrypting the `sbtest` tables. On this VM, encryption cost 2% of sysbench throughput (619 ± 27 against 606 ± 9 transactions per second), 2.5% read-only and 5.2% write-only, and p95 latency rose by 2 to 4%. The MariaDB server used about 11% more CPU time per run (108 to 111 s unencrypted, 121 to 123 s encrypted), but it used fewer than 2 of the 4 cores, so CPU was not what limited throughput there. Our reading is that the extra encryption work went into idle CPU on the VM, while on the laptop it cost throughput, but we did not test that. The six `.ibd` files took exactly the same space before and after encryption (291,848,192 bytes). The VM found the same user 1 and the same counts as the laptop (email once, name 1,982 times, then 0 and 0), so the data generator gives the same data on arm64. The shop queries (7.91 s and 8.10 s) are the first ones measured with the current `sql/workload.sql`.
@@ -389,8 +400,8 @@ The documentation page linked from the project area ([Data-at-rest encryption](h
 | Data-at-rest encryption fundamentals | The idea runs through the whole project. `attack_view.sh` shows what someone with only the data files sees, before and after |
 | InnoDB encryption | Used in depth: table encryption with a key id per table, the encrypted redo log, temporary files (`encrypt_tmp_files`), the background encryption threads, key rotation and the `INNODB_TABLESPACES_ENCRYPTION` view. We showed that with `ON` a new table can opt out with `ENCRYPTED=NO` (`integrity_check.sh`). Not covered: forcing encryption for every table (`innodb_encrypt_tables=FORCE`) and encrypting InnoDB's temporary tables |
 | Key management and encryption plugins | The Vault plugin in depth: caching, timeouts, the token, and what happens when Vault fails. We did not use or compare the file key plugin or AWS KMS |
-| Binary log encryption | Tested with `enable_binlog_aria.sh` and `attack_binlog_aria.sh`. With `encrypt_binlog=ON` new binary logs are unreadable in the data directory, but logs written before stay readable until purged. Not tested: key rotation, Vault outage and throughput with the binary log on |
-| Aria encryption | `aria_encrypt_tables=ON` encrypts new tables; existing tables must be rebuilt with `ALTER TABLE ... ENGINE=Aria ROW_FORMAT=PAGE`. The Aria transaction log (`aria_log`) is not encrypted. Not tested: `encrypt_tmp_disk_tables` |
+| Binary log encryption | Tested with `enable_binlog_aria.sh`, `attack_binlog_aria.sh`, `binlog_rotation_test.sh`, `rotate_under_load.sh`, `vault_down.sh`, and `bench.sh` (`results/Mercedes/`). New binary logs are unreadable on disk, survive key rotation with 0 errors, follow the same Vault cache-timeout outage behavior, and cost ~3.8% sysbench throughput |
+| Aria encryption | `aria_encrypt_tables=ON` encrypts new tables; existing tables must be rebuilt with `ALTER TABLE ... ENGINE=Aria ROW_FORMAT=PAGE`. Internal on-disk temporary Aria tables were tested with `scripts/tmp_disk_test.sh` (`encrypt_tmp_disk_tables=1` stops plain-text leaks). The Aria transaction log (`aria_log`) is not encrypted |
 
 ## Where this approach loses
 
@@ -410,7 +421,7 @@ The documentation page linked from the project area ([Data-at-rest encryption](h
 - The extra tests are single runs, except the crash (two runs).
 - Vault runs in dev mode with the token `root`, and the benchmark user has the password `sbtest`. Both are hardcoded.
 - The Docker image is pinned to `hashicorp/vault:2.1.1`, the version we ran. Our container was started from the `latest` tag and reports Vault 2.1.1.
-- Binary log and Aria were tested only with marker strings on a small test table, not under load. We did not test `encrypt_tmp_disk_tables`, key rotation or a Vault outage with the binary log on, or the throughput cost of the binary log.
+- Binary log and Aria marker checks were run on small test tables, while `encrypt_tmp_disk_tables`, key rotation, Vault outage, and throughput cost with `encrypt_binlog=ON` were run as single test series on one WSL2 machine (`results/Mercedes/`).
 - We tested only on Ubuntu 24.04. The only automated check is `scripts/verify.sh`.
 - `scripts/run_all.sh` ran from start to finish once, on our laptop with the packages already installed (`results/claudia2/`, about 21 minutes). It also ran on a fresh Ubuntu 24.04 VM on an M1 Mac (arm64, 4 virtual CPUs, 4 GB, `results/m1-vm/`), run by a student outside our team, which had to install every package: steps 1 to 15 passed on the first try in 33 minutes.
 - The key rotation test was run three times with rotation and three times as a control, on one laptop, with a load made to use a lot of CPU time. Runs differ by up to about 10% in level, so a small cost of rotation could be hidden.

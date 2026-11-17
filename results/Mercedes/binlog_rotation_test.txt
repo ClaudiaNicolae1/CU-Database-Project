@@ -1,0 +1,11 @@
+### marker: ROTMARKER-1794942393   encrypt_binlog=1
+-- before rotation: active binlog = mariadb-bin.000003
+-- rotating key mariadb/1 in Vault and waiting 62s for cache timeout...
+-- after rotation: active binlog = mariadb-bin.000004
+-- disk check (strings) on old log (mariadb-bin.000003, key v1):
+   (not found in plain text)
+-- disk check (strings) on new log (mariadb-bin.000004, key v2):
+   (not found in plain text)
+-- SQL decryption check (SHOW BINLOG EVENTS):
+   events decoded in mariadb-bin.000003 (v1): 5
+   events decoded in mariadb-bin.000004 (v2): 5

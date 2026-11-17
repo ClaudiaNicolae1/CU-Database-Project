@@ -1,0 +1,64 @@
+== key versions seen by MariaDB (from results/Mercedes/rotation_progress.txt)
+at the start: min_key_version=1 max_current_version=1
+first new key version (max version 2) first seen at the poll at 31s (written at 21s)
+second new key version (max version 3) first seen at the poll at 62s (written at 62s)
+at the end (236s): min_key_version=3 max_current_version=3 still_rotating=0, pages re-encrypted during the run=3090
+
+== scan workers, per 10 s: rounds, errors, average and slowest round in seconds
+from_s rounds errors avg_s max_s
+0 168 0 0.21 0.21
+10 180 0 0.21 0.24
+20 184 0 0.21 0.21
+30 188 0 0.21 0.21
+40 184 0 0.21 0.21
+50 184 0 0.21 0.21
+60 184 0 0.21 0.21
+70 188 0 0.21 0.21
+80 184 0 0.21 0.21
+90 186 0 0.21 0.21
+100 186 0 0.21 0.21
+110 186 0 0.21 0.21
+120 188 0 0.21 0.21
+130 184 0 0.21 0.31
+140 185 0 0.21 0.21
+150 186 0 0.21 0.21
+160 184 0 0.21 0.31
+170 185 0 0.21 0.21
+180 186 0 0.21 0.21
+190 185 0 0.21 0.31
+200 186 0 0.21 0.31
+210 185 0 0.21 0.21
+220 186 0 0.21 0.21
+230 185 0 0.21 0.21
+240 10 0 0.21 0.21
+total: 4437 rounds, 0 errors
+
+== point workers, per 10 s: rounds, errors, average and slowest round in seconds
+from_s rounds errors avg_s max_s
+0 154 0 0.11 0.11
+10 167 0 0.11 0.13
+20 172 0 0.11 0.11
+30 170 0 0.11 0.21
+40 172 0 0.11 0.11
+50 170 0 0.11 0.11
+60 172 0 0.11 0.11
+70 174 0 0.11 0.11
+80 172 0 0.11 0.21
+90 174 0 0.11 0.11
+100 174 0 0.11 0.11
+110 174 0 0.11 0.11
+120 173 0 0.11 0.31
+130 172 0 0.11 0.11
+140 173 0 0.11 0.11
+150 173 0 0.11 0.11
+160 173 0 0.11 0.11
+170 172 0 0.11 0.11
+180 173 0 0.11 0.11
+190 173 0 0.11 0.11
+200 173 0 0.11 0.21
+210 172 0 0.11 0.11
+220 174 0 0.11 0.11
+230 174 0 0.11 0.11
+240 8 0 0.11 0.11
+total: 4128 rounds, 0 errors
+

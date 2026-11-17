@@ -1,0 +1,5 @@
+### marker: TMPMARKER-1794940667
+-- temporary disk table NOT encrypted (encrypt_tmp_disk_tables=0)
+   LEAKED IN TEMP FILE: "TMPMARKER-1794940667-+49 213994432
+-- temporary disk table encrypted (encrypt_tmp_disk_tables=1)
+   (not found in plain text)

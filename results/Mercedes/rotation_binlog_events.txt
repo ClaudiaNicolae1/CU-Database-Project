@@ -1,0 +1,4 @@
+start 20:08:58, load for 240s: 4 scan workers and 2 point workers
+key 2 versions at the start: min=1 max=1
+new version of key 2 written at 21s (first)
+new version of key 2 written at 62s (second)
