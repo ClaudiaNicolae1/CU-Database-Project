@@ -347,7 +347,7 @@ Numbers depend on the machine, so compare the relative change. A `-` means that 
 | Daris | - | - | - | - | - | - | - | - | - |
 | Francisco | - | - | - | - | - | - | - | - | - |
 | m1-vm | 619 | 606 | -2% | 23.42 | 24.39 | +4% | 7.907 | 8.097 | +2% |
-| Mercedes | - | 1209 | - | - | 10.66 | - | - | 4.183 | - |
+| Mercedes | 1251 | 1209 | -3% | 10.28 | 10.66 | +4% | 3.904 | 4.183 | +7% |
 <!-- compare:end -->
 
 **The clean-machine run (`m1-vm`).** A fresh Ubuntu 24.04 VM on an M1 Mac (arm64, Multipass, 4 virtual CPUs, 4 GB) ran `scripts/run_all.sh`, which had to install every package. Steps 1 to 15 passed on the first try and took 33 minutes. Most of it (about 18 minutes) was InnoDB encrypting the `sbtest` tables. On this VM, encryption cost 2% of sysbench throughput (619 ± 27 against 606 ± 9 transactions per second), 2.5% read-only and 5.2% write-only, and p95 latency rose by 2 to 4%. The MariaDB server used about 11% more CPU time per run (108 to 111 s unencrypted, 121 to 123 s encrypted), but it used fewer than 2 of the 4 cores, so CPU was not what limited throughput there. Our reading is that the extra encryption work went into idle CPU on the VM, while on the laptop it cost throughput, but we did not test that. The six `.ibd` files took exactly the same space before and after encryption (291,848,192 bytes). The VM found the same user 1 and the same counts as the laptop (email once, name 1,982 times, then 0 and 0), so the data generator gives the same data on arm64. The shop queries (7.91 s and 8.10 s) are the first ones measured with the current `sql/workload.sql`.
